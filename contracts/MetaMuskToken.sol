@@ -289,6 +289,8 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
                 availableAmount < amount,
                 "Not enough available balance to transfer"
             );
+
+            users[sender].amountICO = users[sender].amountICO.sub(unlockAmount);
         }
 
         _balances[sender] = _balances[sender].sub(
