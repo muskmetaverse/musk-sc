@@ -19,14 +19,63 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
     string private _symbol;
     string private _name;
 
-    constructor() public {
+    uint256 public startICO;
+    uint256 public endICO;
+    uint256 public totalAmountPerBNB;
+    uint256 public percentClaimPerDate;
+    mapping(address => UserInfo) public users;
+    struct UserInfo {
+        uint256 amountICO;
+        uint256 amountClaimPerSec;
+        uint256 claimAt;
+        bool isSetup;
+    }
+
+    constructor(
+        uint256 _startICO,
+        uint256 _endICO,
+        uint256 _totalAmountPerBNB,
+        uint256 _percentClaimPerDate
+    ) public {
         _name = "METAMUSK";
         _symbol = "METAMUSK";
         _decimals = 18;
         _totalSupply = 1000000000000000 * 10**18;
         _balances[msg.sender] = _totalSupply;
 
+        startICO = _startICO;
+        endICO = _endICO;
+        totalAmountPerBNB = _totalAmountPerBNB;
+        percentClaimPerDate = _percentClaimPerDate;
+
         emit Transfer(address(0), msg.sender, _totalSupply);
+    }
+
+    function buyICO() external payable {
+        require(msg.value > 0, "value must be greater than 0");
+        require(block.timestamp >= startICO, "ICO time dose not start now");
+        require(block.timestamp <= endICO, "ICO time is expired");
+
+        uint256 buyAmountToken = msg.value * totalAmountPerBNB;
+        uint256 remainAmountToken = this.balanceOf(address(this));
+        require(
+            buyAmountToken <= remainAmountToken,
+            "Not enough amount token to buy"
+        );
+
+        if (users[msg.sender].isSetup == false) {
+            UserInfo storage userInfo = users[msg.sender];
+            userInfo.amountICO = buyAmountToken;
+            userInfo.amountClaimPerSec = _calTotalAmountPerSec(buyAmountToken);
+            userInfo.isSetup = true;
+        } else {
+            users[msg.sender].amountICO += buyAmountToken;
+            users[msg.sender].amountClaimPerSec = _calTotalAmountPerSec(
+                users[msg.sender].amountICO
+            );
+        }
+
+        users[msg.sender].claimAt = block.timestamp;
     }
 
     /**
@@ -315,5 +364,29 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
                 "BEP20: burn amount exceeds allowance"
             )
         );
+    }
+
+    function _calTotalAmountPerSec(uint256 amount)
+        internal
+        view
+        returns (uint256)
+    {
+        uint256 numOfDays = (100 * 100) / percentClaimPerDate;
+        uint256 totalSeconds = numOfDays * 24 * 60 * 60;
+        uint256 totalAmountPerSec = amount / totalSeconds;
+        return totalAmountPerSec;
+    }
+
+    function _getClaimAmount(address account) external view returns (uint256) {
+        if (users[account].isSetup == false || users[account].amountICO == 0)
+            return 0;
+
+        uint256 diff = block.timestamp - users[account].claimAt;
+        uint256 claimAmount = users[account].amountClaimPerSec * diff;
+
+        if (claimAmount > users[account].amountICO)
+            claimAmount = users[account].amountICO;
+
+        return claimAmount;
     }
 }
