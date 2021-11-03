@@ -52,7 +52,9 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
     }
 
     modifier onlyOwner() {
-        require(msg.sender == this.getOwner(), "You are not owner.");
+        address sender = _msgSender();
+        address owner = this.getOwner();
+        require(sender == owner, "You are not owner.");
         _;
     }
 
@@ -110,20 +112,21 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
             "The contract does not enough amount token to buy"
         );
 
-        if (users[msg.sender].isSetup == false) {
-            UserInfo storage userInfo = users[msg.sender];
+        address sender = _msgSender();
+        if (users[sender].isSetup == false) {
+            UserInfo storage userInfo = users[sender];
             userInfo.amountICO = buyAmountToken;
             userInfo.amountClaimPerSec = _calTotalAmountPerSec(buyAmountToken);
+            users[sender].claimAt = block.timestamp;
             userInfo.isSetup = true;
         } else {
-            users[msg.sender].amountICO += buyAmountToken;
-            users[msg.sender].amountClaimPerSec = _calTotalAmountPerSec(
-                users[msg.sender].amountICO
+            users[sender].amountICO += buyAmountToken;
+            users[sender].amountClaimPerSec = _calTotalAmountPerSec(
+                users[sender].amountICO
             );
         }
 
-        _transfer(address(this), _msgSender(), buyAmountToken);
-        users[msg.sender].claimAt = block.timestamp;
+        _transfer(address(this), sender, buyAmountToken);
     }
 
     function claimBNB() external onlyOwner {
@@ -131,8 +134,9 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
     }
 
     function claimToken() external onlyOwner {
+        address sender = _msgSender();
         uint256 remainAmountToken = this.balanceOf(address(this));
-        this.transfer(msg.sender, remainAmountToken);
+        this.transfer(sender, remainAmountToken);
     }
 
     /**
@@ -298,10 +302,10 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
             users[sender].amountICO > 0 &&
             availableAmount < amount
         ) {
-            unlockAmount = this._getUnlockAmount(sender);
+            unlockAmount = _getUnlockAmount(sender);
             availableAmount = availableAmount.add(unlockAmount);
             require(
-                availableAmount < amount,
+                availableAmount >= amount,
                 "Not enough available balance to transfer"
             );
         }
@@ -314,6 +318,9 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
 
         if (unlockAmount > 0) {
             users[sender].amountICO = users[sender].amountICO.sub(unlockAmount);
+            users[sender].amountICO = users[sender].amountICO < 0
+                ? 0
+                : users[sender].amountICO;
             users[sender].claimAt = block.timestamp;
         }
 
@@ -413,7 +420,7 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
         return totalAmountPerSec;
     }
 
-    function _getUnlockAmount(address account) external view returns (uint256) {
+    function _getUnlockAmount(address account) internal view returns (uint256) {
         if (users[account].isSetup == false || users[account].amountICO == 0)
             return 0;
 
