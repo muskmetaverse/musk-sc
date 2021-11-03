@@ -1,0 +1,7 @@
+node_modules
+package-lock.json
+build
+.secret
+.DS_Store
+.private_key.mainnet
+yarn.lock
