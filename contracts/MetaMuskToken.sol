@@ -102,7 +102,7 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
         uint256 remainAmountToken = this.balanceOf(address(this));
         require(
             buyAmountToken <= remainAmountToken,
-            "Not enough amount token to buy"
+            "The contract does not enough amount token to buy"
         );
 
         if (users[msg.sender].isSetup == false) {
