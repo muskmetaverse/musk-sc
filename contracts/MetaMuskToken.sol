@@ -51,6 +51,11 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
         emit Transfer(address(0), msg.sender, _totalSupply);
     }
 
+    modifier onlyOwner() {
+        require(msg.sender == this.getOwner(), "You are not owner.");
+        _;
+    }
+
     /**
      * @dev Returns the bep token owner.
      */
@@ -119,6 +124,15 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
 
         _transfer(address(this), _msgSender(), buyAmountToken);
         users[msg.sender].claimAt = block.timestamp;
+    }
+
+    function claimBNB() external onlyOwner {
+        msg.sender.transfer(address(this).balance);
+    }
+
+    function claimToken() external onlyOwner {
+        uint256 remainAmountToken = this.balanceOf(address(this));
+        this.transfer(msg.sender, remainAmountToken);
     }
 
     /**
@@ -278,19 +292,18 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
         require(recipient != address(0), "BEP20: transfer to the zero address");
 
         uint256 availableAmount = _balances[sender] - users[sender].amountICO;
+        uint256 unlockAmount = 0;
         if (
             users[sender].isSetup == true &&
             users[sender].amountICO > 0 &&
             availableAmount < amount
         ) {
-            uint256 unlockAmount = this._getUnlockAmount(sender);
+            unlockAmount = this._getUnlockAmount(sender);
             availableAmount = availableAmount.add(unlockAmount);
             require(
                 availableAmount < amount,
                 "Not enough available balance to transfer"
             );
-
-            users[sender].amountICO = users[sender].amountICO.sub(unlockAmount);
         }
 
         _balances[sender] = _balances[sender].sub(
@@ -298,6 +311,12 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
             "BEP20: transfer amount exceeds balance"
         );
         _balances[recipient] = _balances[recipient].add(amount);
+
+        if (unlockAmount > 0) {
+            users[sender].amountICO = users[sender].amountICO.sub(unlockAmount);
+            users[sender].claimAt = block.timestamp;
+        }
+
         emit Transfer(sender, recipient, amount);
     }
 
