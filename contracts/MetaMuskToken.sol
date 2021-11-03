@@ -129,6 +129,18 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
         _transfer(address(this), sender, buyAmountToken);
     }
 
+    function getAvailableBalance() external view returns (uint256) {
+        address sender = _msgSender();
+
+        uint256 availableAmount = _balances[sender] - users[sender].amountICO;
+        if (users[sender].isSetup == true && users[sender].amountICO > 0) {
+            uint256 unlockAmount = _getUnlockAmount(sender);
+            availableAmount = availableAmount.add(unlockAmount);
+        }
+
+        return availableAmount;
+    }
+
     function claimBNB() external onlyOwner {
         msg.sender.transfer(address(this).balance);
     }
