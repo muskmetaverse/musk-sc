@@ -320,7 +320,7 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
             availableAmount = availableAmount.add(unlockAmount);
             require(
                 availableAmount >= amount,
-                "Not enough available balance to transfer"
+                "some available balance has been locked and will be unlocked gradually"
             );
         }
 
