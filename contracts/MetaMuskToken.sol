@@ -43,6 +43,10 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
         _totalSupply = 1000000000000000 * 10**18;
         _balances[msg.sender] = _totalSupply;
 
+        require(_startTimeICO < _endTimeICO, "invalid ICO time");
+        require(_totalAmountPerBNB > 0, "invalid rate buy ICO");
+        require(_totalAmountPerBNB > 0, "invalid unlock percent per day");
+
         startTimeICO = _startTimeICO;
         endTimeICO = _endTimeICO;
         totalAmountPerBNB = _totalAmountPerBNB;
