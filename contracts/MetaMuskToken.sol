@@ -307,7 +307,9 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
         require(sender != address(0), "BEP20: transfer from the zero address");
         require(recipient != address(0), "BEP20: transfer to the zero address");
 
-        uint256 availableAmount = _balances[sender] - users[sender].amountICO;
+        uint256 availableAmount = _balances[sender].sub(
+            users[sender].amountICO
+        );
         uint256 unlockAmount = 0;
         if (
             users[sender].isSetup == true &&
