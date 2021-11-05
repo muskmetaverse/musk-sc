@@ -53,7 +53,7 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
 
         require(_startTimeICO < _endTimeICO, "invalid ICO time");
         require(_totalAmountPerBNB > 0, "invalid rate buy ICO by BNB");
-        require(totalAmountPerBUSD > 0, "invalid rate buy ICO by BUSD");
+        require(_totalAmountPerBUSD > 0, "invalid rate buy ICO by BUSD");
         require(_percentClaimPerDate > 0, "invalid unlock percent per day");
         require(
             _busdContractAddress != address(0),
@@ -120,7 +120,7 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
     }
 
     function buyICOByBUSD(uint256 amount) external payable {
-        uint256 buyAmountToken = msg.value * totalAmountPerBUSD;
+        uint256 buyAmountToken = amount * totalAmountPerBUSD;
         _precheckBuy(amount, buyAmountToken);
 
         address sender = _msgSender();
