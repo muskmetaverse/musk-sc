@@ -6,6 +6,8 @@ import "./interfaces/IBEP20.sol";
 import "./utils/Context.sol";
 import "./utils/Ownable.sol";
 import "./libs/SafeMath.sol";
+import "./interfaces/IERC20.sol";
+import "./libs/SafeERC20.sol";
 
 contract MetaMuskToken is Context, IBEP20, Ownable {
     using SafeMath for uint256;
