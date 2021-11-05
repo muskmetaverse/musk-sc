@@ -12,6 +12,9 @@ import "./libs/SafeERC20.sol";
 contract MetaMuskToken is Context, IBEP20, Ownable {
     using SafeMath for uint256;
 
+    using SafeERC20 for IERC20;
+    IERC20 public tokenBUSD;
+
     mapping(address => uint256) private _balances;
 
     mapping(address => mapping(address => uint256)) private _allowances;
@@ -37,7 +40,8 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
         uint256 _startTimeICO,
         uint256 _endTimeICO,
         uint256 _totalAmountPerBNB,
-        uint256 _percentClaimPerDate
+        uint256 _percentClaimPerDate,
+        address _busdContractAddress
     ) public {
         _name = "METAMUSK";
         _symbol = "METAMUSK";
@@ -48,11 +52,16 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
         require(_startTimeICO < _endTimeICO, "invalid ICO time");
         require(_totalAmountPerBNB > 0, "invalid rate buy ICO");
         require(_totalAmountPerBNB > 0, "invalid unlock percent per day");
+        require(
+            _busdContractAddress != address(0),
+            "invalid busd contract address"
+        );
 
         startTimeICO = _startTimeICO;
         endTimeICO = _endTimeICO;
         totalAmountPerBNB = _totalAmountPerBNB;
         percentClaimPerDate = _percentClaimPerDate;
+        tokenBUSD = IERC20(_busdContractAddress);
 
         emit Transfer(address(0), msg.sender, _totalSupply);
     }
@@ -106,33 +115,21 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
         return _balances[account];
     }
 
-    function buyICO() external payable {
-        require(msg.value > 0, "value must be greater than 0");
-        require(block.timestamp >= startTimeICO, "ICO time dose not start now");
-        require(block.timestamp <= endTimeICO, "ICO time is expired");
-
+    function buyICOByBUSD(uint256 amount) external payable {
         uint256 buyAmountToken = msg.value * totalAmountPerBNB;
-        uint256 remainAmountToken = this.balanceOf(address(this));
-        require(
-            buyAmountToken <= remainAmountToken,
-            "The contract does not enough amount token to buy"
-        );
+        _precheckBuy(amount, buyAmountToken);
 
         address sender = _msgSender();
-        if (users[sender].isSetup == false) {
-            UserInfo storage userInfo = users[sender];
-            userInfo.amountICO = buyAmountToken;
-            userInfo.amountClaimPerSec = _calTotalAmountPerSec(buyAmountToken);
-            users[sender].claimAt = block.timestamp;
-            userInfo.isSetup = true;
-        } else {
-            users[sender].amountICO += buyAmountToken;
-            users[sender].amountClaimPerSec = _calTotalAmountPerSec(
-                users[sender].amountICO
-            );
-        }
+        tokenBUSD.safeTransferFrom(sender, address(this), amount);
+        _buy(sender, buyAmountToken);
+    }
 
-        _transfer(address(this), sender, buyAmountToken);
+    function buyICO() external payable {
+        uint256 buyAmountToken = msg.value * totalAmountPerBNB;
+        _precheckBuy(msg.value, buyAmountToken);
+
+        address sender = _msgSender();
+        _buy(sender, buyAmountToken);
     }
 
     function getAvailableBalance() external view returns (uint256) {
@@ -451,5 +448,37 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
             claimAmount = users[account].amountICO;
 
         return claimAmount;
+    }
+
+    function _precheckBuy(uint256 amount, uint256 buyAmountToken)
+        internal
+        view
+    {
+        require(amount > 0, "value must be greater than 0");
+        require(block.timestamp >= startTimeICO, "ICO time dose not start now");
+        require(block.timestamp <= endTimeICO, "ICO time is expired");
+
+        uint256 remainAmountToken = this.balanceOf(address(this));
+        require(
+            buyAmountToken <= remainAmountToken,
+            "The contract does not enough amount token to buy"
+        );
+    }
+
+    function _buy(address sender, uint256 buyAmountToken) internal {
+        if (users[sender].isSetup == false) {
+            UserInfo storage userInfo = users[sender];
+            userInfo.amountICO = buyAmountToken;
+            userInfo.amountClaimPerSec = _calTotalAmountPerSec(buyAmountToken);
+            users[sender].claimAt = block.timestamp;
+            userInfo.isSetup = true;
+        } else {
+            users[sender].amountICO += buyAmountToken;
+            users[sender].amountClaimPerSec = _calTotalAmountPerSec(
+                users[sender].amountICO
+            );
+        }
+
+        _transfer(address(this), sender, buyAmountToken);
     }
 }
