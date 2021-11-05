@@ -27,6 +27,7 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
     uint256 public startTimeICO;
     uint256 public endTimeICO;
     uint256 public totalAmountPerBNB;
+    uint256 public totalAmountPerBUSD;
     uint256 public percentClaimPerDate;
     mapping(address => UserInfo) public users;
     struct UserInfo {
@@ -40,6 +41,7 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
         uint256 _startTimeICO,
         uint256 _endTimeICO,
         uint256 _totalAmountPerBNB,
+        uint256 _totalAmountPerBUSD,
         uint256 _percentClaimPerDate,
         address _busdContractAddress
     ) public {
@@ -50,8 +52,9 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
         _balances[msg.sender] = _totalSupply;
 
         require(_startTimeICO < _endTimeICO, "invalid ICO time");
-        require(_totalAmountPerBNB > 0, "invalid rate buy ICO");
-        require(_totalAmountPerBNB > 0, "invalid unlock percent per day");
+        require(_totalAmountPerBNB > 0, "invalid rate buy ICO by BNB");
+        require(totalAmountPerBUSD > 0, "invalid rate buy ICO by BUSD");
+        require(_percentClaimPerDate > 0, "invalid unlock percent per day");
         require(
             _busdContractAddress != address(0),
             "invalid busd contract address"
@@ -60,6 +63,7 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
         startTimeICO = _startTimeICO;
         endTimeICO = _endTimeICO;
         totalAmountPerBNB = _totalAmountPerBNB;
+        totalAmountPerBUSD = _totalAmountPerBUSD;
         percentClaimPerDate = _percentClaimPerDate;
         tokenBUSD = IERC20(_busdContractAddress);
 
@@ -116,7 +120,7 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
     }
 
     function buyICOByBUSD(uint256 amount) external payable {
-        uint256 buyAmountToken = msg.value * totalAmountPerBNB;
+        uint256 buyAmountToken = msg.value * totalAmountPerBUSD;
         _precheckBuy(amount, buyAmountToken);
 
         address sender = _msgSender();
@@ -146,6 +150,11 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
 
     function claimBNB() external onlyOwner {
         msg.sender.transfer(address(this).balance);
+    }
+
+    function claimBUSD() external onlyOwner {
+        uint256 remainAmountToken = tokenBUSD.balanceOf(address(this));
+        tokenBUSD.transfer(msg.sender, remainAmountToken);
     }
 
     function claimToken() external onlyOwner {
