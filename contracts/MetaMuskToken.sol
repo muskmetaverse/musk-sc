@@ -6,9 +6,14 @@ import "./interfaces/IBEP20.sol";
 import "./utils/Context.sol";
 import "./utils/Ownable.sol";
 import "./libs/SafeMath.sol";
+import "./interfaces/IERC20.sol";
+import "./libs/SafeERC20.sol";
 
 contract MetaMuskToken is Context, IBEP20, Ownable {
     using SafeMath for uint256;
+
+    using SafeERC20 for IERC20;
+    IERC20 public tokenBUSD;
 
     mapping(address => uint256) private _balances;
 
@@ -22,6 +27,7 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
     uint256 public startTimeICO;
     uint256 public endTimeICO;
     uint256 public totalAmountPerBNB;
+    uint256 public totalAmountPerBUSD;
     uint256 public percentClaimPerDate;
     mapping(address => UserInfo) public users;
     struct UserInfo {
@@ -35,7 +41,9 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
         uint256 _startTimeICO,
         uint256 _endTimeICO,
         uint256 _totalAmountPerBNB,
-        uint256 _percentClaimPerDate
+        uint256 _totalAmountPerBUSD,
+        uint256 _percentClaimPerDate,
+        address _busdContractAddress
     ) public {
         _name = "METAMUSK";
         _symbol = "METAMUSK";
@@ -44,13 +52,20 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
         _balances[msg.sender] = _totalSupply;
 
         require(_startTimeICO < _endTimeICO, "invalid ICO time");
-        require(_totalAmountPerBNB > 0, "invalid rate buy ICO");
-        require(_totalAmountPerBNB > 0, "invalid unlock percent per day");
+        require(_totalAmountPerBNB > 0, "invalid rate buy ICO by BNB");
+        require(_totalAmountPerBUSD > 0, "invalid rate buy ICO by BUSD");
+        require(_percentClaimPerDate > 0, "invalid unlock percent per day");
+        require(
+            _busdContractAddress != address(0),
+            "invalid busd contract address"
+        );
 
         startTimeICO = _startTimeICO;
         endTimeICO = _endTimeICO;
         totalAmountPerBNB = _totalAmountPerBNB;
+        totalAmountPerBUSD = _totalAmountPerBUSD;
         percentClaimPerDate = _percentClaimPerDate;
+        tokenBUSD = IERC20(_busdContractAddress);
 
         emit Transfer(address(0), msg.sender, _totalSupply);
     }
@@ -104,33 +119,21 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
         return _balances[account];
     }
 
-    function buyICO() external payable {
-        require(msg.value > 0, "value must be greater than 0");
-        require(block.timestamp >= startTimeICO, "ICO time dose not start now");
-        require(block.timestamp <= endTimeICO, "ICO time is expired");
-
-        uint256 buyAmountToken = msg.value * totalAmountPerBNB;
-        uint256 remainAmountToken = this.balanceOf(address(this));
-        require(
-            buyAmountToken <= remainAmountToken,
-            "The contract does not enough amount token to buy"
-        );
+    function buyICOByBUSD(uint256 amount) external payable {
+        uint256 buyAmountToken = amount * totalAmountPerBUSD;
+        _precheckBuy(amount, buyAmountToken);
 
         address sender = _msgSender();
-        if (users[sender].isSetup == false) {
-            UserInfo storage userInfo = users[sender];
-            userInfo.amountICO = buyAmountToken;
-            userInfo.amountClaimPerSec = _calTotalAmountPerSec(buyAmountToken);
-            users[sender].claimAt = block.timestamp;
-            userInfo.isSetup = true;
-        } else {
-            users[sender].amountICO += buyAmountToken;
-            users[sender].amountClaimPerSec = _calTotalAmountPerSec(
-                users[sender].amountICO
-            );
-        }
+        tokenBUSD.safeTransferFrom(sender, address(this), amount);
+        _buy(sender, buyAmountToken);
+    }
 
-        _transfer(address(this), sender, buyAmountToken);
+    function buyICO() external payable {
+        uint256 buyAmountToken = msg.value * totalAmountPerBNB;
+        _precheckBuy(msg.value, buyAmountToken);
+
+        address sender = _msgSender();
+        _buy(sender, buyAmountToken);
     }
 
     function getAvailableBalance() external view returns (uint256) {
@@ -147,6 +150,11 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
 
     function claimBNB() external onlyOwner {
         msg.sender.transfer(address(this).balance);
+    }
+
+    function claimBUSD() external onlyOwner {
+        uint256 remainAmountToken = tokenBUSD.balanceOf(address(this));
+        tokenBUSD.transfer(msg.sender, remainAmountToken);
     }
 
     function claimToken() external onlyOwner {
@@ -449,5 +457,37 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
             claimAmount = users[account].amountICO;
 
         return claimAmount;
+    }
+
+    function _precheckBuy(uint256 amount, uint256 buyAmountToken)
+        internal
+        view
+    {
+        require(amount > 0, "value must be greater than 0");
+        require(block.timestamp >= startTimeICO, "ICO time dose not start now");
+        require(block.timestamp <= endTimeICO, "ICO time is expired");
+
+        uint256 remainAmountToken = this.balanceOf(address(this));
+        require(
+            buyAmountToken <= remainAmountToken,
+            "The contract does not enough amount token to buy"
+        );
+    }
+
+    function _buy(address sender, uint256 buyAmountToken) internal {
+        if (users[sender].isSetup == false) {
+            UserInfo storage userInfo = users[sender];
+            userInfo.amountICO = buyAmountToken;
+            userInfo.amountClaimPerSec = _calTotalAmountPerSec(buyAmountToken);
+            users[sender].claimAt = block.timestamp;
+            userInfo.isSetup = true;
+        } else {
+            users[sender].amountICO += buyAmountToken;
+            users[sender].amountClaimPerSec = _calTotalAmountPerSec(
+                users[sender].amountICO
+            );
+        }
+
+        _transfer(address(this), sender, buyAmountToken);
     }
 }
