@@ -95,12 +95,12 @@ contract MetaMuskToken is
         _name = "METAMUSK";
         _symbol = "METAMUSK";
         _decimals = 18;
-        _totalSupply = 1000000000000000 * 10**_decimals;
 
         __ERC20_init(_name, _symbol);
-        _mint(msg.sender, _totalSupply);
+        uint256 totalAmount = 1000000000000000 * 10**_decimals;
+        _mint(msg.sender, totalAmount);
 
-        emit Transfer(address(0), msg.sender, _totalSupply);
+        emit Transfer(address(0), msg.sender, totalAmount);
     }
 
     // @custom:oz-upgrades-unsafe-allow constructor
