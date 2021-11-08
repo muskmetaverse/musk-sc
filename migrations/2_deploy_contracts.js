@@ -1,6 +1,7 @@
-const { deployProxy } = require('@openzeppelin/truffle-upgrades');
+const { deployProxy, upgradeProxy } = require('@openzeppelin/truffle-upgrades');
 
 const MetaMuskToken = artifacts.require("MetaMuskToken");
+// const MetaMuskTokenV2 = artifacts.require("MetaMuskTokenV2");
 
 // testnet
 const START_TIME_ICO = 1636340453;
@@ -33,4 +34,9 @@ module.exports = async function (deployer, network) {
     console.table({
         MetaMuskTokenContract: instance.address
     });
+
+    // const newInstance = await upgradeProxy('MetaMuskToken.existing.address', MetaMuskTokenV2, { deployer });
+    // console.table({
+    //     MetaMuskTokenContractV2: newInstance.address
+    // });
 };
