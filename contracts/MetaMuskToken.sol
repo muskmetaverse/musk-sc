@@ -1,19 +1,25 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.5.16;
+pragma solidity ^0.8.0;
 
-import "./interfaces/IBEP20.sol";
-import "./utils/Context.sol";
-import "./utils/Ownable.sol";
-import "./libs/SafeMath.sol";
-import "./interfaces/IERC20.sol";
-import "./libs/SafeERC20.sol";
+import "./token/ERC20/IERC20Upgradeable.sol";
+import "./token/ERC20/utils/SafeERC20Upgradeable.sol";
+import "./token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
+import "./access/OwnableUpgradeable.sol";
+import "./utils/ContextUpgradeable.sol";
+import "./utils/math/SafeMathUpgradeable.sol";
 
-contract MetaMuskToken is Context, IBEP20, Ownable {
-    using SafeMath for uint256;
+contract MetaMuskToken is
+    Initializable,
+    ContextUpgradeable,
+    IERC20Upgradeable,
+    IERC20MetadataUpgradeable,
+    OwnableUpgradeable
+{
+    using SafeMathUpgradeable for uint256;
 
-    using SafeERC20 for IERC20;
-    IERC20 public tokenBUSD;
+    using SafeERC20Upgradeable for IERC20Upgradeable;
+    IERC20Upgradeable public tokenBUSD;
 
     mapping(address => uint256) private _balances;
 
@@ -21,8 +27,8 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
 
     uint256 private _totalSupply;
     uint8 private _decimals;
-    string private _symbol;
     string private _name;
+    string private _symbol;
 
     uint256 public startTimeICO;
     uint256 public endTimeICO;
@@ -37,14 +43,39 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
         bool isSetup;
     }
 
-    constructor(
+    /**
+     * @dev Sets the values for {name} and {symbol}.
+     *
+     * The default value of {decimals} is 18. To select a different value for
+     * {decimals} you should overload it.
+     *
+     * All two of these values are immutable: they can only be set once during
+     * construction.
+     */
+    function __ERC20_init(string memory name_, string memory symbol_)
+        internal
+        initializer
+    {
+        __Context_init_unchained();
+        __ERC20_init_unchained(name_, symbol_);
+    }
+
+    function __ERC20_init_unchained(string memory name_, string memory symbol_)
+        internal
+        initializer
+    {
+        _name = name_;
+        _symbol = symbol_;
+    }
+
+    function initialize(
         uint256 _startTimeICO,
         uint256 _endTimeICO,
         uint256 _totalAmountPerBNB,
         uint256 _totalAmountPerBUSD,
         uint256 _percentClaimPerDate,
         address _busdContractAddress
-    ) public {
+    ) public initializer {
         require(_startTimeICO < _endTimeICO, "invalid ICO time");
         require(_totalAmountPerBNB > 0, "invalid rate buy ICO by BNB");
         require(_totalAmountPerBUSD > 0, "invalid rate buy ICO by BUSD");
@@ -54,68 +85,73 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
             "invalid busd contract address"
         );
 
-        _name = "METAMUSK";
-        _symbol = "METAMUSK";
-        _decimals = 18;
-        _totalSupply = 1000000000000000 * 10**18;
-        _balances[msg.sender] = _totalSupply;
-
         startTimeICO = _startTimeICO;
         endTimeICO = _endTimeICO;
         totalAmountPerBNB = _totalAmountPerBNB;
         totalAmountPerBUSD = _totalAmountPerBUSD;
         percentClaimPerDate = _percentClaimPerDate;
-        tokenBUSD = IERC20(_busdContractAddress);
+        tokenBUSD = IERC20Upgradeable(_busdContractAddress);
+
+        _name = "METAMUSK";
+        _symbol = "METAMUSK";
+        _decimals = 18;
+        _totalSupply = 1000000000000000 * 10**_decimals;
+
+        __ERC20_init(_name, _symbol);
+        _mint(msg.sender, _totalSupply);
 
         emit Transfer(address(0), msg.sender, _totalSupply);
     }
 
-    modifier onlyOwner() {
-        address sender = _msgSender();
-        address owner = this.getOwner();
-        require(sender == owner, "You are not owner.");
-        _;
-    }
+    // @custom:oz-upgrades-unsafe-allow constructor
+    constructor() initializer {}
 
     /**
      * @dev Returns the bep token owner.
      */
-    function getOwner() external view returns (address) {
+    function getOwner() external view virtual override returns (address) {
         return owner();
     }
 
     /**
      * @dev Returns the token decimals.
      */
-    function decimals() external view returns (uint8) {
+    function decimals() external view virtual override returns (uint8) {
         return _decimals;
     }
 
     /**
-     * @dev Returns the token symbol.
+     * @dev Returns the name of the token.
      */
-    function symbol() external view returns (string memory) {
-        return _symbol;
+    function name() public view virtual override returns (string memory) {
+        return _name;
     }
 
     /**
-     * @dev Returns the token name.
+     * @dev Returns the symbol of the token, usually a shorter version of the
+     * name.
      */
-    function name() external view returns (string memory) {
-        return _name;
+    function symbol() public view virtual override returns (string memory) {
+        return _symbol;
     }
 
     /**
      * @dev See {BEP20-totalSupply}.
      */
-    function totalSupply() external view returns (uint256) {
+    function totalSupply() external view virtual override returns (uint256) {
         return _totalSupply;
     }
 
     /**
      * @dev See {BEP20-balanceOf}.
      */
-    function balanceOf(address account) external view returns (uint256) {
+    function balanceOf(address account)
+        external
+        view
+        virtual
+        override
+        returns (uint256)
+    {
         return _balances[account];
     }
 
@@ -149,7 +185,7 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
     }
 
     function claimBNB() external onlyOwner {
-        msg.sender.transfer(address(this).balance);
+        payable(msg.sender).transfer(address(this).balance);
     }
 
     function claimBUSD() external onlyOwner {
@@ -173,6 +209,8 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
      */
     function transfer(address recipient, uint256 amount)
         external
+        virtual
+        override
         returns (bool)
     {
         _transfer(_msgSender(), recipient, amount);
@@ -185,6 +223,8 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
     function allowance(address owner, address spender)
         external
         view
+        virtual
+        override
         returns (uint256)
     {
         return _allowances[owner][spender];
@@ -197,7 +237,12 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
      *
      * - `spender` cannot be the zero address.
      */
-    function approve(address spender, uint256 amount) external returns (bool) {
+    function approve(address spender, uint256 amount)
+        external
+        virtual
+        override
+        returns (bool)
+    {
         _approve(_msgSender(), spender, amount);
         return true;
     }
@@ -218,7 +263,7 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
         address sender,
         address recipient,
         uint256 amount
-    ) external returns (bool) {
+    ) external virtual override returns (bool) {
         _transfer(sender, recipient, amount);
         _approve(
             sender,

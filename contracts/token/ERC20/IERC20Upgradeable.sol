@@ -1,27 +1,16 @@
 // SPDX-License-Identifier: MIT
+// OpenZeppelin Contracts v4.3.2 (token/ERC20/IERC20.sol)
 
-pragma solidity ^0.5.16;
+pragma solidity ^0.8.0;
 
-interface IBEP20 {
+/**
+ * @dev Interface of the ERC20 standard as defined in the EIP.
+ */
+interface IERC20Upgradeable {
     /**
      * @dev Returns the amount of tokens in existence.
      */
     function totalSupply() external view returns (uint256);
-
-    /**
-     * @dev Returns the token decimals.
-     */
-    function decimals() external view returns (uint8);
-
-    /**
-     * @dev Returns the token symbol.
-     */
-    function symbol() external view returns (string memory);
-
-    /**
-     * @dev Returns the token name.
-     */
-    function name() external view returns (string memory);
 
     /**
      * @dev Returns the bep token owner.
@@ -51,7 +40,7 @@ interface IBEP20 {
      *
      * This value changes when {approve} or {transferFrom} are called.
      */
-    function allowance(address _owner, address spender)
+    function allowance(address owner, address spender)
         external
         view
         returns (uint256);

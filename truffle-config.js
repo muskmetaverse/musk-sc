@@ -5,10 +5,6 @@ const privateKeyTestnet = fs.readFileSync(".private_key.testnet").toString().tri
 const privateKeyRinkebyTestnet = fs.readFileSync(".private_key_rinkeby.testnet").toString().trim();
 const privateKeyMainnet = fs.readFileSync(".private_key.mainnet").toString().trim();
 
-console.log('privateKeyTestnet: ', privateKeyTestnet);
-console.log('privateKeyRinkebyTestnet: ', privateKeyRinkebyTestnet);
-console.log('privateKeyMainnet: ', privateKeyMainnet);
-
 module.exports = {
   networks: {
     testnet: {
@@ -35,7 +31,7 @@ module.exports = {
   mocha: {},
   compilers: {
     solc: {
-      version: "0.5.16",    // Fetch exact version from solc-bin (default: truffle's version)
+      version: "0.8.3",    // Fetch exact version from solc-bin (default: truffle's version)
       docker: false,        // Use "0.5.1" you've installed locally with docker (default: false)
       settings: {
         evmVersion: 'byzantium', // Default: "petersburg"
