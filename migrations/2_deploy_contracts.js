@@ -29,6 +29,7 @@ module.exports = async function (deployer, network) {
         PERCENT_UNLOCK_PER_DAY,
         BUSD_CONTRACT_ADDRESS
     ], { deployer });
+
     console.table({
         MetaMuskTokenContract: instance.address
     });
