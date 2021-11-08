@@ -104,7 +104,7 @@ contract MetaMuskToken is
     }
 
     // @custom:oz-upgrades-unsafe-allow constructor
-    constructor() initializer {}
+    // constructor() initializer {}
 
     /**
      * @dev Returns the bep token owner.
