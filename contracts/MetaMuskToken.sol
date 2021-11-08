@@ -45,12 +45,6 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
         uint256 _percentClaimPerDate,
         address _busdContractAddress
     ) public {
-        _name = "METAMUSK";
-        _symbol = "METAMUSK";
-        _decimals = 18;
-        _totalSupply = 1000000000000000 * 10**18;
-        _balances[msg.sender] = _totalSupply;
-
         require(_startTimeICO < _endTimeICO, "invalid ICO time");
         require(_totalAmountPerBNB > 0, "invalid rate buy ICO by BNB");
         require(_totalAmountPerBUSD > 0, "invalid rate buy ICO by BUSD");
@@ -59,6 +53,12 @@ contract MetaMuskToken is Context, IBEP20, Ownable {
             _busdContractAddress != address(0),
             "invalid busd contract address"
         );
+
+        _name = "METAMUSK";
+        _symbol = "METAMUSK";
+        _decimals = 18;
+        _totalSupply = 1000000000000000 * 10**18;
+        _balances[msg.sender] = _totalSupply;
 
         startTimeICO = _startTimeICO;
         endTimeICO = _endTimeICO;
