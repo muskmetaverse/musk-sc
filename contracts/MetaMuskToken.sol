@@ -172,6 +172,10 @@ contract MetaMuskToken is
         _buy(sender, buyAmountToken);
     }
 
+    function burn(uint256 amount) external {
+        _burn(msg.sender, amount);
+    }
+
     function getAvailableBalance() external view returns (uint256) {
         address sender = _msgSender();
 
