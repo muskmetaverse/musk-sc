@@ -203,6 +203,25 @@ contract MetaMuskToken is
         this.transfer(sender, remainAmountToken);
     }
 
+    function setRoundInfo(
+        uint256 _startTimeICO,
+        uint256 _endTimeICO,
+        uint256 _totalAmountPerBNB,
+        uint256 _totalAmountPerBUSD,
+        uint256 _percentClaimPerDate
+    ) external onlyOwner {
+        require(_startTimeICO < _endTimeICO, "invalid time");
+        require(_totalAmountPerBNB > 0, "invalid rate buy ICO by BNB");
+        require(_totalAmountPerBUSD > 0, "invalid rate buy ICO by BUSD");
+        require(_percentClaimPerDate > 0, "invalid unlock percent per day");
+
+        startTimeICO = _startTimeICO;
+        endTimeICO = _endTimeICO;
+        totalAmountPerBNB = _totalAmountPerBNB;
+        totalAmountPerBUSD = _totalAmountPerBUSD;
+        percentClaimPerDate = _percentClaimPerDate;
+    }
+
     /**
      * @dev See {BEP20-transfer}.
      *
