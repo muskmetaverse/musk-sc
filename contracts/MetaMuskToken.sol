@@ -2,12 +2,12 @@
 
 pragma solidity ^0.8.0;
 
-import "./token/ERC20/IERC20Upgradeable.sol";
-import "./token/ERC20/utils/SafeERC20Upgradeable.sol";
-import "./token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
-import "./access/OwnableUpgradeable.sol";
-import "./utils/ContextUpgradeable.sol";
-import "./utils/math/SafeMathUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
 
 contract MetaMuskToken is
     Initializable,
@@ -109,7 +109,7 @@ contract MetaMuskToken is
     /**
      * @dev Returns the bep token owner.
      */
-    function getOwner() external view virtual override returns (address) {
+    function getOwner() external view virtual returns (address) {
         return owner();
     }
 

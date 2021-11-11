@@ -1,7 +1,7 @@
 const { deployProxy, upgradeProxy } = require('@openzeppelin/truffle-upgrades');
 
 const MetaMuskToken = artifacts.require("MetaMuskToken");
-const MetaMuskTokenV2 = artifacts.require("MetaMuskTokenV2");
+// const MetaMuskTokenV2 = artifacts.require("MetaMuskTokenV2");
 
 // testnet
 const START_TIME_ICO = 1636340453;
