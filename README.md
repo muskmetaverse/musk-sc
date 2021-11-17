@@ -24,19 +24,24 @@ $ truffle migrate --network bsc
 ## test on console
 - refer to: https://www.trufflesuite.com/docs/truffle/testing/testing-your-contracts
 - refer to: https://www.trufflesuite.com/docs/truffle/getting-started/interacting-with-your-contracts
-### To launch the console, run the command: 
+### To launch the console, run the command:
   ```
   truffle console --network testnet
   ```
 ### Create a new abstraction to represent the contract at that address:
+- replace "0x1234..." value by your MetaMusk contract address that you deployed before
+- run bellow command in truffle console: 
   ```
-  let specificInstance = await MetaMuskToken.at("MetaMusk Contract Address")
+  let specificInstance = await MetaMuskToken.at("0x1234...")
   ```
 ### Making a call to buy ICO buy bnb
+- Make sure you have bnb in your wallet 
+- Run bellow command in truffle console
   ```
   let result = await specificInstance.buyICO({from: accounts[0], value: web3.utils.toWei('0.01', 'ether')})
   ```
 ### Making a call to buy ICO buy BUSD
+- Make sure you have BUSD in your wallet address
 - to approve BUSD for our contract, go to this link: https://testnet.bscscan.com/address/0xed24fc36d5ee211ea25a80239fb8c4cfd80f12ee#writeContract (in this case, we are using BUSD contract address 0xed24fc36d5ee211ea25a80239fb8c4cfd80f12ee to integrate with MetaMusk token, you can change BUSD contract address by other BUSD contract address)
 - connect to Web3 by wallet that you are using to test in truffle console
 - at "2. approve" tab method, please fill "_spender" with MetaMusk contract address and fill "_value" equal the value that you are using to buyICOByBUSD (the value in wei format)
