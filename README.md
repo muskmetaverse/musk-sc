@@ -64,3 +64,7 @@ $ truffle migrate --network bsc
   ```
   truffle run verify MetaMuskToken@0x68D2E27940CA48109Fa3DaD0D2C8B27E64a0c6cf --network testnet
   ```
+- go to https://testnet.bscscan.com/proxyContractChecker?a={proxy-contract-address} (replace {proxy-contract-address} with your proxy contract address)
+- click "Verify" button on page from above link
+- get contract address is display at popup
+- run verify again with this contract
