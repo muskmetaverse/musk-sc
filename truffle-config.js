@@ -4,8 +4,15 @@ const fs = require('fs');
 const privateKeyTestnet = fs.readFileSync(".private_key.testnet").toString().trim();
 const privateKeyRinkebyTestnet = fs.readFileSync(".private_key_rinkeby.testnet").toString().trim();
 const privateKeyMainnet = fs.readFileSync(".private_key.mainnet").toString().trim();
+const { BSCSCANAPIKEY } = require('./env.json');
 
 module.exports = {
+  plugins: [
+    'truffle-plugin-verify'
+  ],
+  api_keys: {
+    bscscan: BSCSCANAPIKEY
+  },
   networks: {
     testnet: {
       provider: () => new HDWalletProvider(privateKeyTestnet, `https://data-seed-prebsc-1-s1.binance.org:8545`),

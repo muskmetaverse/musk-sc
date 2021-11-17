@@ -50,3 +50,17 @@ $ truffle migrate --network bsc
   ```
   let result = await specificInstance.buyICOByBUSD(web3.utils.toWei('1', 'ether'), {from: accounts[0]})
   ```
+
+### Verify Contract on BscScan
+- Get API key: https://bscscan.com/myapikey
+- replace API key value in env.json file with key BSCSCANAPIKEY
+- replace {contract-address} with your contract address
+- replace {network-name} with network that you config in truffle-config.js file, example testnet, bsc,...
+- run command:
+  ```
+  truffle run verify MetaMuskToken@{contract-address} --network {network-name}
+  ```
+- example:
+  ```
+  truffle run verify MetaMuskToken@0x68D2E27940CA48109Fa3DaD0D2C8B27E64a0c6cf --network testnet
+  ```
