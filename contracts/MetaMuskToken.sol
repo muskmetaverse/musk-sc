@@ -43,6 +43,8 @@ contract MetaMuskToken is
         bool isSetup;
     }
 
+    address public operatorAddress;
+
     /**
      * @dev Sets the values for {name} and {symbol}.
      *
@@ -74,7 +76,8 @@ contract MetaMuskToken is
         uint256 _totalAmountPerBNB,
         uint256 _totalAmountPerBUSD,
         uint256 _percentClaimPerDate,
-        address _busdContractAddress
+        address _busdContractAddress,
+        address _operatorAddress
     ) public initializer {
         require(_startTimeICO < _endTimeICO, "invalid ICO time");
         require(_totalAmountPerBNB > 0, "invalid rate buy ICO by BNB");
@@ -91,6 +94,7 @@ contract MetaMuskToken is
         totalAmountPerBUSD = _totalAmountPerBUSD;
         percentClaimPerDate = _percentClaimPerDate;
         tokenBUSD = IERC20Upgradeable(_busdContractAddress);
+        operatorAddress = _operatorAddress;
 
         _name = "METAMUSK";
         _symbol = "METAMUSK";
@@ -105,6 +109,11 @@ contract MetaMuskToken is
 
     // @custom:oz-upgrades-unsafe-allow constructor
     // constructor() initializer {}
+
+    modifier onlyOperator() {
+        require(msg.sender == operatorAddress, "Your are not operator");
+        _;
+    }
 
     /**
      * @dev Returns the bep token owner.
@@ -170,6 +179,14 @@ contract MetaMuskToken is
 
         address sender = _msgSender();
         _buy(sender, buyAmountToken);
+    }
+
+    function transferAirDrop(uint256 amount, address toAddress)
+        external
+        onlyOperator
+    {
+        _precheckAirDrop(amount);
+        _buy(toAddress, amount);
     }
 
     function burn(uint256 amount) external {
@@ -539,6 +556,14 @@ contract MetaMuskToken is
         require(
             buyAmountToken <= remainAmountToken,
             "The contract does not enough amount token to buy"
+        );
+    }
+
+    function _precheckAirDrop(uint256 amount) internal view {
+        uint256 remainAmountToken = this.balanceOf(address(this));
+        require(
+            amount <= remainAmountToken,
+            "The contract does not enough amount token to airdrop"
         );
     }
 
