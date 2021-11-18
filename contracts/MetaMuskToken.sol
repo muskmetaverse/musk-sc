@@ -44,6 +44,10 @@ contract MetaMuskToken is
     }
 
     address public operatorAddress;
+    struct Airdrop {
+        address userAddress;
+        uint256 amount;
+    }
 
     /**
      * @dev Sets the values for {name} and {symbol}.
@@ -181,11 +185,38 @@ contract MetaMuskToken is
         _buy(sender, buyAmountToken);
     }
 
-    function transferAirDrop(uint256 amount, address toAddress)
+    /**
+     * returns success addresses
+     */
+    function transferAirdrops(Airdrop[] memory arrAirdrop, uint256 totalAmount)
+        external
+        onlyOperator
+        returns (address[] memory)
+    {
+        _precheckAirdrop(totalAmount);
+
+        address[] memory _addresses;
+        for (uint256 i = 0; i < arrAirdrop.length; i++) {
+            try
+                this._transferAirdrop(
+                    arrAirdrop[i].userAddress,
+                    arrAirdrop[i].amount
+                )
+            {
+                _addresses[i] = arrAirdrop[i].userAddress;
+            } catch {
+                return _addresses;
+            }
+        }
+
+        return _addresses;
+    }
+
+    function _transferAirdrop(address toAddress, uint256 amount)
         external
         onlyOperator
     {
-        _precheckAirDrop(amount);
+        _precheckAirdrop(amount);
         _buy(toAddress, amount);
     }
 
@@ -559,7 +590,7 @@ contract MetaMuskToken is
         );
     }
 
-    function _precheckAirDrop(uint256 amount) internal view {
+    function _precheckAirdrop(uint256 amount) internal view {
         uint256 remainAmountToken = this.balanceOf(address(this));
         require(
             amount <= remainAmountToken,
