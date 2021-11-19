@@ -111,9 +111,6 @@ contract MetaMuskToken is
         emit Transfer(address(0), msg.sender, totalAmount);
     }
 
-    // @custom:oz-upgrades-unsafe-allow constructor
-    // constructor() initializer {}
-
     modifier onlyOperator() {
         require(msg.sender == operatorAddress, "Your are not operator");
         _;
@@ -185,9 +182,6 @@ contract MetaMuskToken is
         _buy(sender, buyAmountToken);
     }
 
-    /**
-     * returns success addresses
-     */
     function transferAirdrops(Airdrop[] memory arrAirdrop, uint256 totalAmount)
         external
         onlyOperator
