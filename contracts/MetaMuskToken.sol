@@ -191,33 +191,11 @@ contract MetaMuskToken is
     function transferAirdrops(Airdrop[] memory arrAirdrop, uint256 totalAmount)
         external
         onlyOperator
-        returns (address[] memory)
     {
         _precheckAirdrop(totalAmount);
-
-        address[] memory _addresses;
         for (uint256 i = 0; i < arrAirdrop.length; i++) {
-            try
-                this._transferAirdrop(
-                    arrAirdrop[i].userAddress,
-                    arrAirdrop[i].amount
-                )
-            {
-                _addresses[i] = arrAirdrop[i].userAddress;
-            } catch {
-                return _addresses;
-            }
+            _transferAirdrop(arrAirdrop[i].userAddress, arrAirdrop[i].amount);
         }
-
-        return _addresses;
-    }
-
-    function _transferAirdrop(address toAddress, uint256 amount)
-        external
-        onlyOperator
-    {
-        _precheckAirdrop(amount);
-        _buy(toAddress, amount);
     }
 
     function burn(uint256 amount) external {
@@ -588,6 +566,11 @@ contract MetaMuskToken is
             buyAmountToken <= remainAmountToken,
             "The contract does not enough amount token to buy"
         );
+    }
+
+    function _transferAirdrop(address toAddress, uint256 amount) internal {
+        _precheckAirdrop(amount);
+        _buy(toAddress, amount);
     }
 
     function _precheckAirdrop(uint256 amount) internal view {
