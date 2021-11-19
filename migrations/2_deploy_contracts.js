@@ -10,6 +10,7 @@ const TOTAL_AMOUNT_PER_BNB = 40000;
 const TOTAL_AMOUNT_PER_BUSD = 10;
 const PERCENT_UNLOCK_PER_DAY = 50;  // value * 100
 const BUSD_CONTRACT_ADDRESS = '0xed24fc36d5ee211ea25a80239fb8c4cfd80f12ee';
+const OPERATOR_ADDRESS = '0x096E36E51AbdAD5387E826Fef1fd0D3B70D3b201';
 
 // for mainnet
 // const START_TIME_ICO = 1636340453;
@@ -18,6 +19,7 @@ const BUSD_CONTRACT_ADDRESS = '0xed24fc36d5ee211ea25a80239fb8c4cfd80f12ee';
 // const TOTAL_AMOUNT_PER_BUSD = 10;
 // const PERCENT_UNLOCK_PER_DAY = 50;  // value * 100
 // const BUSD_CONTRACT_ADDRESS = '';
+// const OPERATOR_ADDRESS = '';
 
 module.exports = async function (deployer, network) {
     console.log("you are deploying with the network: ", network);
@@ -28,7 +30,8 @@ module.exports = async function (deployer, network) {
         TOTAL_AMOUNT_PER_BNB,
         TOTAL_AMOUNT_PER_BUSD,
         PERCENT_UNLOCK_PER_DAY,
-        BUSD_CONTRACT_ADDRESS
+        BUSD_CONTRACT_ADDRESS,
+        OPERATOR_ADDRESS
     ], { deployer });
 
     console.table({
