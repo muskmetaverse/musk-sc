@@ -12,8 +12,14 @@ $ npm install
 - make sure you have bnb balance in your wallet for deployment. Receive test bnb value from page: https://testnet.binance.org/faucet-smart
 - change private key in file .private_key.testnet
 - run bellow command:
-$ truffle migrate --reset --network testnet
-
+  ```
+  truffle migrate --reset --network testnet
+  ```
+  or
+  ```
+  truffle deploy --network testnet --reset --compile-none
+  ```
+  
 # mainnet
 - make sure you have bnb balance in your wallet for deployment.
 - change private key in file .private_key.mainnet
