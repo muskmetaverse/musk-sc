@@ -192,6 +192,15 @@ contract MetaMuskToken is
         }
     }
 
+    /**
+     * @dev set operator address
+     * callable by owner
+     */
+    function setOperator(address _operatorAddress) external onlyOwner {
+        require(_operatorAddress != address(0), "Cannot be zero address");
+        operatorAddress = _operatorAddress;
+    }
+
     function burn(uint256 amount) external {
         _burn(msg.sender, amount);
     }
