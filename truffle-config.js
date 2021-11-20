@@ -15,9 +15,8 @@ module.exports = {
   },
   networks: {
     testnet: {
-      provider: () => new HDWalletProvider(privateKeyTestnet, `https://data-seed-prebsc-1-s1.binance.org:8545`),
+      provider: () => new HDWalletProvider(privateKeyTestnet, `https://data-seed-prebsc-1-s3.binance.org:8545`),
       network_id: 97,
-      confirmations: 10,
       timeoutBlocks: 200,
       skipDryRun: true
     },
@@ -29,7 +28,7 @@ module.exports = {
     bsc: {
       provider: () => new HDWalletProvider(privateKeyMainnet, `https://bsc-dataseed1.binance.org`),
       network_id: 56,
-      confirmations: 10,
+      // confirmations: 10,
       timeoutBlocks: 200,
       skipDryRun: true,
       gasPrice: 10000000000
