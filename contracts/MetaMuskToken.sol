@@ -196,7 +196,9 @@ contract MetaMuskToken is
     function buyICO() external payable {
         int256 busdBNBPrice = this.getLatestPrice();
         uint256 totalBUSDConverted = msg.value / uint256(busdBNBPrice);
-        uint256 buyAmountToken = totalBUSDConverted * totalAmountPerBUSD;
+        uint256 buyAmountToken = totalBUSDConverted *
+            totalAmountPerBUSD *
+            10**_decimals;
         _precheckBuy(msg.value, buyAmountToken);
 
         address sender = _msgSender();
