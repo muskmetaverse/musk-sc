@@ -111,7 +111,7 @@ contract MetaMuskToken is
         __ERC20_init(_name, _symbol);
         __Ownable_init();
         uint256 totalAmount = 1000000000000000 * 10**_decimals;
-        _mint(address(this), totalAmount);
+        _mint(msg.sender, totalAmount);
 
         emit Transfer(address(0), msg.sender, totalAmount);
     }
