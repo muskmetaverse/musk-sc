@@ -111,7 +111,7 @@ contract MetaMuskToken is
         __ERC20_init(_name, _symbol);
         __Ownable_init();
         uint256 totalAmount = 1000000000000000 * 10**_decimals;
-        _mint(msg.sender, totalAmount);
+        _mint(address(this), totalAmount);
 
         emit Transfer(address(0), msg.sender, totalAmount);
     }
@@ -195,9 +195,10 @@ contract MetaMuskToken is
 
     function buyICO() external payable {
         int256 busdBNBPrice = this.getLatestPrice();
-        uint256 totalBUSDConverted = msg.value / (uint256(busdBNBPrice) / 1e18);
+        uint256 totalBUSDConverted = (msg.value * (10**_decimals)) /
+            uint256(busdBNBPrice);
         uint256 buyAmountToken = totalBUSDConverted.mul(totalAmountPerBUSD);
-        _precheckBuy(msg.value, buyAmountToken * 1e18);
+        _precheckBuy(msg.value, buyAmountToken);
 
         address sender = _msgSender();
         _buy(sender, buyAmountToken);
