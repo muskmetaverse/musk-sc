@@ -8,6 +8,7 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20Metadat
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 contract MetaMuskToken is
     Initializable,
@@ -32,7 +33,6 @@ contract MetaMuskToken is
 
     uint256 public startTimeICO;
     uint256 public endTimeICO;
-    uint256 public totalAmountPerBNB;
     uint256 public totalAmountPerBUSD;
     uint256 public percentClaimPerDate;
     mapping(address => UserInfo) public users;
@@ -48,6 +48,9 @@ contract MetaMuskToken is
         address userAddress;
         uint256 amount;
     }
+
+    AggregatorV3Interface internal priceFeed;
+    address priceFeedAddress;
 
     /**
      * @dev Sets the values for {name} and {symbol}.
@@ -77,14 +80,13 @@ contract MetaMuskToken is
     function initialize(
         uint256 _startTimeICO,
         uint256 _endTimeICO,
-        uint256 _totalAmountPerBNB,
         uint256 _totalAmountPerBUSD,
         uint256 _percentClaimPerDate,
         address _busdContractAddress,
-        address _operatorAddress
+        address _operatorAddress,
+        address _priceFeedAddress
     ) public initializer {
         require(_startTimeICO < _endTimeICO, "invalid ICO time");
-        require(_totalAmountPerBNB > 0, "invalid rate buy ICO by BNB");
         require(_totalAmountPerBUSD > 0, "invalid rate buy ICO by BUSD");
         require(_percentClaimPerDate > 0, "invalid unlock percent per day");
         require(
@@ -94,11 +96,13 @@ contract MetaMuskToken is
 
         startTimeICO = _startTimeICO;
         endTimeICO = _endTimeICO;
-        totalAmountPerBNB = _totalAmountPerBNB;
         totalAmountPerBUSD = _totalAmountPerBUSD;
         percentClaimPerDate = _percentClaimPerDate;
         tokenBUSD = IERC20Upgradeable(_busdContractAddress);
         operatorAddress = _operatorAddress;
+
+        priceFeedAddress = _priceFeedAddress;
+        priceFeed = AggregatorV3Interface(_priceFeedAddress);
 
         _name = "METAMUSK";
         _symbol = "METAMUSK";
@@ -166,6 +170,20 @@ contract MetaMuskToken is
         return _balances[account];
     }
 
+    /**
+     * Returns the latest price
+     */
+    function getLatestPrice() public view returns (int256) {
+        (
+            uint80 roundID,
+            int256 price,
+            uint256 startedAt,
+            uint256 timeStamp,
+            uint80 answeredInRound
+        ) = priceFeed.latestRoundData();
+        return price;
+    }
+
     function buyICOByBUSD(uint256 amount) external payable {
         uint256 buyAmountToken = amount * totalAmountPerBUSD;
         _precheckBuy(amount, buyAmountToken);
@@ -176,7 +194,9 @@ contract MetaMuskToken is
     }
 
     function buyICO() external payable {
-        uint256 buyAmountToken = msg.value * totalAmountPerBNB;
+        int256 busdBNBPrice = this.getLatestPrice();
+        uint256 totalBUSDConverted = msg.value / uint256(busdBNBPrice);
+        uint256 buyAmountToken = totalBUSDConverted * totalAmountPerBUSD;
         _precheckBuy(msg.value, buyAmountToken);
 
         address sender = _msgSender();
@@ -236,18 +256,15 @@ contract MetaMuskToken is
     function setRoundInfo(
         uint256 _startTimeICO,
         uint256 _endTimeICO,
-        uint256 _totalAmountPerBNB,
         uint256 _totalAmountPerBUSD,
         uint256 _percentClaimPerDate
     ) external onlyOwner {
         require(_startTimeICO < _endTimeICO, "invalid time");
-        require(_totalAmountPerBNB > 0, "invalid rate buy ICO by BNB");
         require(_totalAmountPerBUSD > 0, "invalid rate buy ICO by BUSD");
         require(_percentClaimPerDate > 0, "invalid unlock percent per day");
 
         startTimeICO = _startTimeICO;
         endTimeICO = _endTimeICO;
-        totalAmountPerBNB = _totalAmountPerBNB;
         totalAmountPerBUSD = _totalAmountPerBUSD;
         percentClaimPerDate = _percentClaimPerDate;
     }
