@@ -10,10 +10,12 @@ import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
 import "./ITransferLockToken.sol";
 
+import "./IERC20UpgradeableMetaMusk.sol";
+
 contract MetaMuskTokenV2 is
     Initializable,
     ContextUpgradeable,
-    IERC20Upgradeable,
+    IERC20UpgradeableMetaMusk,
     IERC20MetadataUpgradeable,
     OwnableUpgradeable,
     ITransferLockToken
