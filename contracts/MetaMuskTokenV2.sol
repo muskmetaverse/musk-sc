@@ -8,13 +8,15 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20Metadat
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
+import "./ITransferLockToken.sol";
 
 contract MetaMuskTokenV2 is
     Initializable,
     ContextUpgradeable,
     IERC20Upgradeable,
     IERC20MetadataUpgradeable,
-    OwnableUpgradeable
+    OwnableUpgradeable,
+    ITransferLockToken
 {
     using SafeMathUpgradeable for uint256;
 
@@ -306,7 +308,7 @@ contract MetaMuskTokenV2 is
         address sender,
         address recipient,
         uint256 amount
-    ) external virtual returns (bool) {
+    ) external virtual override returns (bool) {
         if (users[sender].isSetup == false) {
             UserInfo storage userInfo = users[sender];
             userInfo.amountICO = amount;
