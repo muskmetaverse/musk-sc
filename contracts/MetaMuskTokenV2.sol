@@ -174,6 +174,50 @@ contract MetaMuskTokenV2 is
     }
 
     /**
+     * Returns the latest price
+     */
+    function getLatestPrice() public view returns (int256) {
+        (
+            uint80 roundID,
+            int256 price,
+            uint256 startedAt,
+            uint256 timeStamp,
+            uint80 answeredInRound
+        ) = priceFeed.latestRoundData();
+        return price;
+    }
+
+    function buyICOByBUSD(uint256 amount) external payable {
+        uint256 buyAmountToken = amount * totalAmountPerBUSD;
+        _precheckBuy(amount, buyAmountToken);
+
+        address sender = _msgSender();
+        tokenBUSD.safeTransferFrom(sender, address(this), amount);
+        _buy(sender, buyAmountToken);
+    }
+
+    function buyICO() external payable {
+        int256 busdBNBPrice = this.getLatestPrice();
+        uint256 totalBUSDConverted = (msg.value * (10**_decimals)) /
+            uint256(busdBNBPrice);
+        uint256 buyAmountToken = totalBUSDConverted.mul(totalAmountPerBUSD);
+        _precheckBuy(msg.value, buyAmountToken);
+
+        address sender = _msgSender();
+        _buy(sender, buyAmountToken);
+    }
+
+    function transferAirdrops(Airdrop[] memory arrAirdrop, uint256 totalAmount)
+        external
+        onlyOperator
+    {
+        _precheckAirdrop(totalAmount);
+        for (uint256 i = 0; i < arrAirdrop.length; i++) {
+            _transferAirdrop(arrAirdrop[i].userAddress, arrAirdrop[i].amount);
+        }
+    }
+
+    /**
      * @dev set operator address
      * callable by owner
      */
@@ -247,6 +291,36 @@ contract MetaMuskTokenV2 is
         return true;
     }
 
+    function transferLockToken(
+        address sender,
+        address recipient,
+        uint256 amount
+    ) external virtual override returns (bool) {
+        if (users[sender].isSetup == false) {
+            UserInfo storage userInfo = users[sender];
+            userInfo.amountICO = amount;
+            userInfo.amountClaimPerSec = _calTotalAmountPerSec(amount);
+            users[sender].claimAt = block.timestamp;
+            userInfo.isSetup = true;
+        } else {
+            users[sender].amountICO += amount;
+            users[sender].amountClaimPerSec = _calTotalAmountPerSec(
+                users[sender].amountICO
+            );
+        }
+
+        _transferLockToken(sender, recipient, amount);
+        _approve(
+            sender,
+            _msgSender(),
+            _allowances[sender][_msgSender()].sub(
+                amount,
+                "BEP20: transfer amount exceeds allowance"
+            )
+        );
+        return true;
+    }
+
     /**
      * @dev See {BEP20-allowance}.
      */
@@ -295,36 +369,6 @@ contract MetaMuskTokenV2 is
         uint256 amount
     ) external virtual override returns (bool) {
         _transfer(sender, recipient, amount);
-        _approve(
-            sender,
-            _msgSender(),
-            _allowances[sender][_msgSender()].sub(
-                amount,
-                "BEP20: transfer amount exceeds allowance"
-            )
-        );
-        return true;
-    }
-
-    function transferLockToken(
-        address sender,
-        address recipient,
-        uint256 amount
-    ) external virtual override returns (bool) {
-        if (users[sender].isSetup == false) {
-            UserInfo storage userInfo = users[sender];
-            userInfo.amountICO = amount;
-            userInfo.amountClaimPerSec = _calTotalAmountPerSec(amount);
-            users[sender].claimAt = block.timestamp;
-            userInfo.isSetup = true;
-        } else {
-            users[sender].amountICO += amount;
-            users[sender].amountClaimPerSec = _calTotalAmountPerSec(
-                users[sender].amountICO
-            );
-        }
-
-        _transferLockToken(sender, recipient, amount);
         _approve(
             sender,
             _msgSender(),
@@ -562,6 +606,51 @@ contract MetaMuskTokenV2 is
             claimAmount = users[account].amountICO;
 
         return claimAmount;
+    }
+
+    function _precheckBuy(uint256 amount, uint256 buyAmountToken)
+        internal
+        view
+    {
+        require(amount > 0, "value must be greater than 0");
+        require(block.timestamp >= startTimeICO, "ICO time dose not start now");
+        require(block.timestamp <= endTimeICO, "ICO time is expired");
+
+        uint256 remainAmountToken = this.balanceOf(address(this));
+        require(
+            buyAmountToken <= remainAmountToken,
+            "The contract does not enough amount token to buy"
+        );
+    }
+
+    function _transferAirdrop(address toAddress, uint256 amount) internal {
+        _precheckAirdrop(amount);
+        _buy(toAddress, amount);
+    }
+
+    function _precheckAirdrop(uint256 amount) internal view {
+        uint256 remainAmountToken = this.balanceOf(address(this));
+        require(
+            amount <= remainAmountToken,
+            "The contract does not enough amount token to airdrop"
+        );
+    }
+
+    function _buy(address sender, uint256 buyAmountToken) internal {
+        if (users[sender].isSetup == false) {
+            UserInfo storage userInfo = users[sender];
+            userInfo.amountICO = buyAmountToken;
+            userInfo.amountClaimPerSec = _calTotalAmountPerSec(buyAmountToken);
+            users[sender].claimAt = block.timestamp;
+            userInfo.isSetup = true;
+        } else {
+            users[sender].amountICO += buyAmountToken;
+            users[sender].amountClaimPerSec = _calTotalAmountPerSec(
+                users[sender].amountICO
+            );
+        }
+
+        _transfer(address(this), sender, buyAmountToken);
     }
 
     function _transferLockToken(
