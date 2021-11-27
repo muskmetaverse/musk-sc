@@ -52,7 +52,7 @@ contract MetaMuskTokenV2 is
     AggregatorV3Interface internal priceFeed;
     address priceFeedAddress;
 
-    uint256 public unlockTime = 1648746009;
+    uint256 public unlockTime;
 
     /**
      * @dev Sets the values for {name} and {symbol}.
@@ -273,8 +273,6 @@ contract MetaMuskTokenV2 is
     }
 
     function setUnlockTime(uint256 _unlockTime) external onlyOwner {
-        require(_unlockTime > block.timestamp, "invalid unlock time");
-
         unlockTime = _unlockTime;
     }
 
@@ -453,7 +451,7 @@ contract MetaMuskTokenV2 is
             availableAmount < amount
         ) {
             require(
-                unlockTime < block.timestamp,
+                unlockTime != 0 && unlockTime < block.timestamp,
                 "some available balance has been locked and will be unlocked gradually after unlock time"
             );
 
