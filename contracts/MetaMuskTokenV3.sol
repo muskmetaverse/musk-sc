@@ -222,15 +222,14 @@ contract MetaMuskTokenV3 is
     }
 
     function unlockToken() external {
-        address sender = _msgSender();
-        if (users[sender].claimAt < unlockTime)
-            users[sender].claimAt = unlockTime;
-
         require(
             unlockTime != 0 && unlockTime < block.timestamp,
             "some available balance has been locked and will be unlocked gradually after unlock time"
         );
 
+        address sender = _msgSender();
+        if (users[sender].claimAt < unlockTime)
+            users[sender].claimAt = unlockTime;
         require(
             users[sender].isSetup == true && users[sender].amountICO > 0,
             "no token locked to be unlocked"
