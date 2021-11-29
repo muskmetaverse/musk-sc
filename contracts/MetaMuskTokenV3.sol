@@ -252,12 +252,14 @@ contract MetaMuskTokenV3 is
         _burn(msg.sender, amount);
     }
 
-    function getAvailableBalance() external view returns (uint256) {
-        address sender = _msgSender();
-
-        uint256 availableAmount = _balances[sender] - users[sender].amountICO;
-        if (users[sender].isSetup == true && users[sender].amountICO > 0) {
-            uint256 unlockAmount = _getUnlockAmount(sender);
+    function getAvailableBalance(address account)
+        external
+        view
+        returns (uint256)
+    {
+        uint256 availableAmount = _balances[account] - users[account].amountICO;
+        if (users[account].isSetup == true && users[account].amountICO > 0) {
+            uint256 unlockAmount = _getUnlockAmount(account);
             availableAmount = availableAmount.add(unlockAmount);
         }
 
@@ -478,9 +480,7 @@ contract MetaMuskTokenV3 is
             users[sender].amountICO
         );
         require(
-            users[sender].isSetup == false &&
-                users[sender].amountICO <= 0 &&
-                availableAmount >= amount,
+            availableAmount >= amount,
             "some available balance has been locked and will be unlocked gradually after unlock time"
         );
 
