@@ -239,6 +239,16 @@ contract MetaMuskTokenV3 is
         }
     }
 
+    function updateUnlockTime(address[] memory addresses)
+        external
+        onlyOperator
+    {
+        require(block.timestamp < unlockTime, "invalid time call function");
+        for (uint256 i = 0; i < addresses.length; i++) {
+            users[addresses[i]].claimAt = unlockTime;
+        }
+    }
+
     /**
      * @dev set operator address
      * callable by owner
