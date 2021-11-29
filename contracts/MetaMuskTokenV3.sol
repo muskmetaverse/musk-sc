@@ -253,11 +253,6 @@ contract MetaMuskTokenV3 is
     }
 
     function getAvailableBalance() external view returns (uint256) {
-        require(
-            unlockTime != 0 && unlockTime < block.timestamp,
-            "some available balance has been locked and will be unlocked gradually after unlock time"
-        );
-
         address sender = _msgSender();
 
         uint256 availableAmount = _balances[sender] - users[sender].amountICO;
@@ -598,6 +593,7 @@ contract MetaMuskTokenV3 is
     }
 
     function _getUnlockAmount(address account) internal view returns (uint256) {
+        if (unlockTime == 0 || unlockTime > block.timestamp) return 0;
         if (users[account].isSetup == false || users[account].amountICO == 0)
             return 0;
 
