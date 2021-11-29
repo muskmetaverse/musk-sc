@@ -651,6 +651,7 @@ contract MetaMuskTokenV3 is
             userInfo.isSetup = true;
         } else {
             users[sender].amountICO += buyAmountToken;
+            users[sender].claimAt = unlockTime;
             users[sender].amountClaimPerSec =
                 users[sender].amountICO /
                 totalLockSeconds;
