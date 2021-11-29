@@ -639,7 +639,10 @@ contract MetaMuskTokenV3 is
     }
 
     function _buy(address sender, uint256 buyAmountToken) internal {
-        require(unlockTime != 0, "unlockTime must be != 0");
+        require(
+            unlockTime != 0 && totalLockSeconds != 0,
+            "unlockTime and totalLockSeconds must be != 0"
+        );
 
         if (users[sender].isSetup == false) {
             UserInfo storage userInfo = users[sender];
