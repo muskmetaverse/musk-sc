@@ -319,11 +319,14 @@ contract MetaMuskTokenV3 is
         percentClaimPerDate = _percentClaimPerDate;
     }
 
-    function setUnlockPerSecond(uint256 _unlockPerSecond) external onlyOwner {
+    function setUnlockPerSecond(uint256 _unlockPerSecond)
+        external
+        onlyOperator
+    {
         unlockPerSecond = _unlockPerSecond;
     }
 
-    function setUnlockTime(uint256 _unlockTime) external onlyOwner {
+    function setUnlockTime(uint256 _unlockTime) external onlyOperator {
         unlockTime = _unlockTime;
     }
 
