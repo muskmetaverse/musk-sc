@@ -269,6 +269,10 @@ contract MetaMuskTokenV3 is
         return availableAmount;
     }
 
+    function getUnlockAmount(address account) external view returns (uint256) {
+        return _getUnlockAmount(account);
+    }
+
     function claimBNB() external onlyOwner {
         payable(msg.sender).transfer(address(this).balance);
     }
@@ -298,9 +302,10 @@ contract MetaMuskTokenV3 is
         endTimeICO = _endTimeICO;
         totalAmountPerBUSD = _totalAmountPerBUSD;
         percentClaimPerDate = _percentClaimPerDate;
+        this.calTotalLockSeconds();
     }
 
-    function calTotalLockSeconds() external onlyOwner {
+    function calTotalLockSeconds() external {
         uint256 numOfDays = (100 * 100) / percentClaimPerDate;
         totalLockSeconds = numOfDays * 24 * 60 * 60;
     }
@@ -580,10 +585,7 @@ contract MetaMuskTokenV3 is
         view
         returns (uint256)
     {
-        require(
-            totalLockSeconds > 0,
-            "please init totalLockSeconds by call calTotalLockSeconds first time"
-        );
+        require(totalLockSeconds > 0, "please init totalLockSeconds");
         return amount / totalLockSeconds;
     }
 
