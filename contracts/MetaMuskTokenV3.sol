@@ -53,7 +53,7 @@ contract MetaMuskTokenV3 is
     address priceFeedAddress;
 
     uint256 public unlockTime;
-    uint256 public totalLockSeconds;
+    uint256 public unlockPerSecond;
 
     /**
      * @dev Sets the values for {name} and {symbol}.
@@ -212,8 +212,8 @@ contract MetaMuskTokenV3 is
         onlyOperator
     {
         require(
-            unlockTime != 0 && totalLockSeconds != 0,
-            "unlockTime and totalLockSeconds must be != 0"
+            unlockTime != 0 && unlockPerSecond != 0,
+            "unlockTime and unlockPerSecond must be != 0"
         );
         _precheckAirdrop(totalAmount);
         for (uint256 i = 0; i < arrAirdrop.length; i++) {
@@ -224,23 +224,17 @@ contract MetaMuskTokenV3 is
     function unlockToken() external {
         require(
             unlockTime != 0 && unlockTime < block.timestamp,
-            "some available balance has been locked and will be unlocked gradually after unlock time"
+            "some available balance has been locked"
         );
 
         address sender = _msgSender();
         if (users[sender].claimAt < unlockTime)
             users[sender].claimAt = unlockTime;
-        require(
-            users[sender].isSetup == true && users[sender].amountICO > 0,
-            "no token locked to be unlocked"
-        );
+        require(users[sender].amountICO > 0, "no token locked to be unlocked");
 
         uint256 unlockAmount = _getUnlockAmount(sender);
         if (unlockAmount > 0) {
             users[sender].amountICO = users[sender].amountICO.sub(unlockAmount);
-            users[sender].amountICO = users[sender].amountICO < 0
-                ? 0
-                : users[sender].amountICO;
             users[sender].claimAt = block.timestamp;
         }
     }
@@ -264,7 +258,7 @@ contract MetaMuskTokenV3 is
         returns (uint256)
     {
         uint256 availableAmount = _balances[account] - users[account].amountICO;
-        if (users[account].isSetup == true && users[account].amountICO > 0) {
+        if (users[account].amountICO > 0) {
             uint256 unlockAmount = _getUnlockAmount(account);
             availableAmount = availableAmount.add(unlockAmount);
         }
@@ -305,12 +299,10 @@ contract MetaMuskTokenV3 is
         endTimeICO = _endTimeICO;
         totalAmountPerBUSD = _totalAmountPerBUSD;
         percentClaimPerDate = _percentClaimPerDate;
-        this.calTotalLockSeconds();
     }
 
-    function calTotalLockSeconds() external {
-        uint256 numOfDays = (100 * 100) / percentClaimPerDate;
-        totalLockSeconds = numOfDays * 24 * 60 * 60;
+    function setUnlockPerSecond(uint256 _unlockPerSecond) external onlyOwner {
+        unlockPerSecond = _unlockPerSecond;
     }
 
     function setUnlockTime(uint256 _unlockTime) external onlyOwner {
@@ -597,11 +589,14 @@ contract MetaMuskTokenV3 is
 
     function _getUnlockAmount(address account) internal view returns (uint256) {
         if (unlockTime == 0 || unlockTime > block.timestamp) return 0;
-        if (users[account].isSetup == false || users[account].amountICO == 0)
-            return 0;
+        if (users[account].amountICO == 0) return 0;
+        uint256 claimAt = users[account].claimAt;
+        if (claimAt < unlockTime) claimAt = unlockTime;
 
-        uint256 diff = block.timestamp.sub(users[account].claimAt);
-        uint256 claimAmount = users[account].amountClaimPerSec * diff;
+        uint256 diff = block.timestamp.sub(claimAt);
+        uint256 claimAmount = (users[account].amountICO / 1e18) *
+            diff *
+            unlockPerSecond;
 
         if (claimAmount > users[account].amountICO)
             claimAmount = users[account].amountICO;
@@ -617,8 +612,8 @@ contract MetaMuskTokenV3 is
         require(block.timestamp >= startTimeICO, "ICO time dose not start now");
         require(block.timestamp <= endTimeICO, "ICO time is expired");
         require(
-            unlockTime != 0 && totalLockSeconds != 0,
-            "unlockTime and totalLockSeconds must be != 0"
+            unlockTime != 0 && unlockPerSecond != 0,
+            "unlockTime and unlockPerSecond must be != 0"
         );
 
         uint256 remainAmountToken = this.balanceOf(address(this));
@@ -629,7 +624,6 @@ contract MetaMuskTokenV3 is
     }
 
     function _transferAirdrop(address toAddress, uint256 amount) internal {
-        _precheckAirdrop(amount);
         _buy(toAddress, amount);
     }
 
@@ -642,19 +636,7 @@ contract MetaMuskTokenV3 is
     }
 
     function _buy(address sender, uint256 buyAmountToken) internal {
-        if (users[sender].isSetup == false) {
-            UserInfo storage userInfo = users[sender];
-            userInfo.amountICO = buyAmountToken;
-            users[sender].claimAt = unlockTime;
-            userInfo.amountClaimPerSec = buyAmountToken / totalLockSeconds;
-            userInfo.isSetup = true;
-        } else {
-            users[sender].amountICO += buyAmountToken;
-            users[sender].claimAt = unlockTime;
-            users[sender].amountClaimPerSec =
-                users[sender].amountICO /
-                totalLockSeconds;
-        }
+        users[sender].amountICO += buyAmountToken;
 
         _transferLockToken(address(this), sender, buyAmountToken);
     }
