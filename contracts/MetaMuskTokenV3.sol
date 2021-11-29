@@ -498,6 +498,23 @@ contract MetaMuskTokenV3 is
         emit Transfer(sender, recipient, amount);
     }
 
+    function _transferLockToken(
+        address sender,
+        address recipient,
+        uint256 amount
+    ) internal {
+        require(sender != address(0), "BEP20: transfer from the zero address");
+        require(recipient != address(0), "BEP20: transfer to the zero address");
+
+        _balances[sender] = _balances[sender].sub(
+            amount,
+            "BEP20: transfer amount exceeds balance"
+        );
+        _balances[recipient] = _balances[recipient].add(amount);
+
+        emit Transfer(sender, recipient, amount);
+    }
+
     /** @dev Creates `amount` tokens and assigns them to `account`, increasing
      * the total supply.
      *
@@ -644,6 +661,6 @@ contract MetaMuskTokenV3 is
             );
         }
 
-        _transfer(address(this), sender, buyAmountToken);
+        _transferLockToken(address(this), sender, buyAmountToken);
     }
 }
