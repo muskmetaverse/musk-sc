@@ -597,15 +597,6 @@ contract MetaMuskTokenV3 is
         );
     }
 
-    function _calTotalAmountPerSec(uint256 amount)
-        internal
-        view
-        returns (uint256)
-    {
-        require(totalLockSeconds > 0, "please init totalLockSeconds");
-        return amount / totalLockSeconds;
-    }
-
     function _getUnlockAmount(address account) internal view returns (uint256) {
         if (users[account].isSetup == false || users[account].amountICO == 0)
             return 0;
@@ -654,13 +645,13 @@ contract MetaMuskTokenV3 is
             UserInfo storage userInfo = users[sender];
             userInfo.amountICO = buyAmountToken;
             users[sender].claimAt = unlockTime;
-            userInfo.amountClaimPerSec = _calTotalAmountPerSec(buyAmountToken);
+            userInfo.amountClaimPerSec = buyAmountToken / totalLockSeconds;
             userInfo.isSetup = true;
         } else {
             users[sender].amountICO += buyAmountToken;
-            users[sender].amountClaimPerSec = _calTotalAmountPerSec(
-                users[sender].amountICO
-            );
+            users[sender].amountClaimPerSec =
+                users[sender].amountICO /
+                totalLockSeconds;
         }
 
         _transferLockToken(address(this), sender, buyAmountToken);
