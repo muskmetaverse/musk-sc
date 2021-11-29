@@ -601,9 +601,7 @@ contract MetaMuskTokenV3 is
         if (users[account].isSetup == false || users[account].amountICO == 0)
             return 0;
 
-        uint256 diff = block.timestamp - users[account].claimAt;
-        if (diff < 0) return 0;
-
+        uint256 diff = block.timestamp.sub(users[account].claimAt);
         uint256 claimAmount = users[account].amountClaimPerSec * diff;
 
         if (claimAmount > users[account].amountICO)
