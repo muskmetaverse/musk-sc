@@ -211,6 +211,10 @@ contract MetaMuskTokenV3 is
         external
         onlyOperator
     {
+        require(
+            unlockTime != 0 && totalLockSeconds != 0,
+            "unlockTime and totalLockSeconds must be != 0"
+        );
         _precheckAirdrop(totalAmount);
         for (uint256 i = 0; i < arrAirdrop.length; i++) {
             _transferAirdrop(arrAirdrop[i].userAddress, arrAirdrop[i].amount);
@@ -598,6 +602,8 @@ contract MetaMuskTokenV3 is
             return 0;
 
         uint256 diff = block.timestamp - users[account].claimAt;
+        if (diff < 0) return 0;
+
         uint256 claimAmount = users[account].amountClaimPerSec * diff;
 
         if (claimAmount > users[account].amountICO)
@@ -613,6 +619,10 @@ contract MetaMuskTokenV3 is
         require(amount > 0, "value must be greater than 0");
         require(block.timestamp >= startTimeICO, "ICO time dose not start now");
         require(block.timestamp <= endTimeICO, "ICO time is expired");
+        require(
+            unlockTime != 0 && totalLockSeconds != 0,
+            "unlockTime and totalLockSeconds must be != 0"
+        );
 
         uint256 remainAmountToken = this.balanceOf(address(this));
         require(
@@ -635,11 +645,6 @@ contract MetaMuskTokenV3 is
     }
 
     function _buy(address sender, uint256 buyAmountToken) internal {
-        require(
-            unlockTime != 0 && totalLockSeconds != 0,
-            "unlockTime and totalLockSeconds must be != 0"
-        );
-
         if (users[sender].isSetup == false) {
             UserInfo storage userInfo = users[sender];
             userInfo.amountICO = buyAmountToken;
