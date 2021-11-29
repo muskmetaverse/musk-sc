@@ -229,6 +229,9 @@ contract MetaMuskTokenV3 is
             "no token locked to be unlocked"
         );
 
+        if (users[sender].claimAt < unlockTime)
+            users[sender].claimAt = unlockTime;
+
         uint256 unlockAmount = _getUnlockAmount(sender);
         if (unlockAmount > 0) {
             users[sender].amountICO = users[sender].amountICO.sub(unlockAmount);
@@ -236,16 +239,6 @@ contract MetaMuskTokenV3 is
                 ? 0
                 : users[sender].amountICO;
             users[sender].claimAt = block.timestamp;
-        }
-    }
-
-    function updateUnlockTime(address[] memory addresses)
-        external
-        onlyOperator
-    {
-        require(block.timestamp < unlockTime, "invalid time call function");
-        for (uint256 i = 0; i < addresses.length; i++) {
-            users[addresses[i]].claimAt = unlockTime;
         }
     }
 
