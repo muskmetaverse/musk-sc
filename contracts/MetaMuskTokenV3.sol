@@ -55,6 +55,13 @@ contract MetaMuskTokenV3 is
     uint256 public unlockTime;
     uint256 public unlockPerSecond;
 
+    // EVENTS
+    event UnlockEvent(
+        uint256 unlockAmount,
+        uint256 currentTimestamp,
+        uint256 lockAmount
+    );
+
     /**
      * @dev Sets the values for {name} and {symbol}.
      *
@@ -232,11 +239,18 @@ contract MetaMuskTokenV3 is
             users[sender].claimAt = unlockTime;
         require(users[sender].amountICO > 0, "no token locked to be unlocked");
 
-        uint256 unlockAmount = _getUnlockAmount(sender);
+        uint256 currentTimestamp = block.timestamp;
+        uint256 unlockAmount = _getUnlockAmount(sender, currentTimestamp);
         if (unlockAmount > 0) {
             users[sender].amountICO = users[sender].amountICO.sub(unlockAmount);
-            users[sender].claimAt = block.timestamp;
+            users[sender].claimAt = currentTimestamp;
         }
+
+        emit UnlockEvent(
+            unlockAmount,
+            currentTimestamp,
+            users[sender].amountICO
+        );
     }
 
     /**
@@ -252,22 +266,26 @@ contract MetaMuskTokenV3 is
         _burn(msg.sender, amount);
     }
 
-    function getAvailableBalance(address account)
+    function getAvailableBalance(address account, uint256 currentTimestamp)
         external
         view
         returns (uint256)
     {
         uint256 availableAmount = _balances[account] - users[account].amountICO;
         if (users[account].amountICO > 0) {
-            uint256 unlockAmount = _getUnlockAmount(account);
+            uint256 unlockAmount = _getUnlockAmount(account, currentTimestamp);
             availableAmount = availableAmount.add(unlockAmount);
         }
 
         return availableAmount;
     }
 
-    function getUnlockAmount(address account) external view returns (uint256) {
-        return _getUnlockAmount(account);
+    function getUnlockAmount(address account, uint256 currentTimestamp)
+        external
+        view
+        returns (uint256)
+    {
+        return _getUnlockAmount(account, currentTimestamp);
     }
 
     function claimBNB() external onlyOwner {
@@ -587,13 +605,17 @@ contract MetaMuskTokenV3 is
         );
     }
 
-    function _getUnlockAmount(address account) internal view returns (uint256) {
-        if (unlockTime == 0 || unlockTime > block.timestamp) return 0;
+    function _getUnlockAmount(address account, uint256 currentTime)
+        internal
+        view
+        returns (uint256)
+    {
+        if (unlockTime == 0 || unlockTime > currentTime) return 0;
         if (users[account].amountICO == 0) return 0;
         uint256 claimAt = users[account].claimAt;
         if (claimAt < unlockTime) claimAt = unlockTime;
 
-        uint256 diff = block.timestamp.sub(claimAt);
+        uint256 diff = currentTime.sub(claimAt);
         uint256 claimAmount = (users[account].amountICO / 1e18) *
             diff *
             unlockPerSecond;
