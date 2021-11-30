@@ -26,7 +26,7 @@ module.exports = {
       gas: 4700000
     },
     bsc: {
-      provider: () => new HDWalletProvider(privateKeyMainnet, `https://bsc-dataseed1.binance.org`),
+      provider: () => new HDWalletProvider(privateKeyMainnet, `https://nd-806-882-723.p2pify.com/795b7346407efe8f554f327cd7f82396`),
       network_id: 56,
       // confirmations: 10,
       timeoutBlocks: 200,
