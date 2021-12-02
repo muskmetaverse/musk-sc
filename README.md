@@ -74,3 +74,9 @@ $ truffle migrate --network bsc
 - click "Verify" button on page from above link
 - get contract address is display at popup
 - run verify again with this contract
+
+### Testnet
+
+```
+0x0702f2048eE7498FAd9D5d868FfFbFc61EB1C469
+```
