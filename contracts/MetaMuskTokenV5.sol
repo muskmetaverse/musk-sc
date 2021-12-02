@@ -12,7 +12,7 @@ import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 import "./interfaces/ITransferLockToken.sol";
 
-contract MetaMuskTokenV4 is
+contract MetaMuskTokenV5 is
     Initializable,
     ContextUpgradeable,
     IERC20Upgradeable,
