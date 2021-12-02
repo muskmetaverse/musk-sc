@@ -31,20 +31,20 @@ module.exports = {
       // confirmations: 1,
       timeoutBlocks: 200,
       skipDryRun: true,
-      gasPrice: 20000000000,
+      gasPrice: 10000000000,
       gas: 9000000
     },
   },
   mocha: {},
   compilers: {
     solc: {
-      version: "0.8.3",    // Fetch exact version from solc-bin (default: truffle's version)
+      version: "0.8.0",    // Fetch exact version from solc-bin (default: truffle's version)
       docker: false,        // Use "0.5.1" you've installed locally with docker (default: false)
       settings: {
         evmVersion: 'byzantium', // Default: "petersburg"
         optimizer: {
           enabled: true,
-          runs: 1500
+          runs: 2000
         }
       }
     },
