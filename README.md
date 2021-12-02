@@ -83,7 +83,10 @@ $ truffle migrate --network bsc
 ─────────────────────────┬──────────────────────────────────────────────┐
 │         (index)         │                    Values                    │
 ├─────────────────────────┼──────────────────────────────────────────────┤
-│ MetaMuskTokenContractV2 │ '0xD442AC4b53B8778d4abc4256ecb3Dc9AE81331DE' │
+│ MetaMuskTokenContractV4 │ '0x2995919424A2AAA74461785481BA6F1573da50b7' │
+│ MetaMuskAirdropContract │ '0x50ca551b234581e41d9B7BF2880D647Faee2fb0e' │
+│ MetaMuskICOContract │ '0x64F861c71e3AaFF9a57a3f550C7b9019478d8E57' │
+
 
 let specificInstance = await MetaMuskTokenV3.at("0xc77408aaefd316790061295b0db548c2903ff41c");
 let result = await specificInstance.setUnlockPerSecond(925925925925);

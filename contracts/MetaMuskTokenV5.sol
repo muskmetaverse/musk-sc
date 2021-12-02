@@ -311,7 +311,7 @@ contract MetaMuskTokenV5 is
         uint256 _endTimeICO,
         uint256 _totalAmountPerBUSD,
         uint256 _percentClaimPerDate
-    ) external onlyOwner {
+    ) external onlyOperator {
         require(_startTimeICO < _endTimeICO, "invalid time");
         require(_totalAmountPerBUSD > 0, "invalid rate buy ICO by BUSD");
         require(_percentClaimPerDate > 0, "invalid unlock percent per day");
@@ -656,7 +656,7 @@ contract MetaMuskTokenV5 is
         uint256 remainAmountToken = this.balanceOf(address(this));
         require(
             amount <= remainAmountToken,
-            "The contract does not enough amount token to airdrop"
+            "Does not enough amount token to airdrop"
         );
     }
 

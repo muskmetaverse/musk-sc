@@ -31,7 +31,7 @@ module.exports = {
       // confirmations: 1,
       timeoutBlocks: 200,
       skipDryRun: true,
-      gasPrice: 20000000000,
+      gasPrice: 10000000000,
       gas: 9000000
     },
   },
@@ -44,7 +44,7 @@ module.exports = {
         evmVersion: 'byzantium', // Default: "petersburg"
         optimizer: {
           enabled: true,
-          runs: 1500
+          runs: 2000
         }
       }
     },
