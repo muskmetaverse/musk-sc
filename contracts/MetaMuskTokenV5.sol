@@ -526,20 +526,6 @@ contract MetaMuskTokenV5 is
         emit Transfer(sender, recipient, amount);
     }
 
-    function _transferLockToken(
-        address sender,
-        address recipient,
-        uint256 amount
-    ) internal {
-        _balances[sender] = _balances[sender].sub(
-            amount,
-            "BEP20: transfer amount exceeds balance"
-        );
-        _balances[recipient] = _balances[recipient].add(amount);
-
-        emit Transfer(sender, recipient, amount);
-    }
-
     /** @dev Creates `amount` tokens and assigns them to `account`, increasing
      * the total supply.
      *
@@ -677,6 +663,6 @@ contract MetaMuskTokenV5 is
     function _buy(address sender, uint256 buyAmountToken) internal {
         users[sender].amountICO += buyAmountToken;
 
-        _transferLockToken(address(this), sender, buyAmountToken);
+        _transfer(address(this), sender, buyAmountToken);
     }
 }
