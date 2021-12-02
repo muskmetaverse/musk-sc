@@ -6,4 +6,5 @@ build
 .private_key.mainnet
 yarn.lock
 .openzeppelin
+.private_key.testnet
 .vscode/launch.json

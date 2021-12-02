@@ -10,12 +10,15 @@ import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
-contract MetaMuskTokenV4 is
+import "./interfaces/ITransferLockToken.sol";
+
+contract MetaMuskTokenV5 is
     Initializable,
     ContextUpgradeable,
     IERC20Upgradeable,
     IERC20MetadataUpgradeable,
-    OwnableUpgradeable
+    OwnableUpgradeable,
+    ITransferLockToken
 {
     using SafeMathUpgradeable for uint256;
 
@@ -308,7 +311,7 @@ contract MetaMuskTokenV4 is
         uint256 _endTimeICO,
         uint256 _totalAmountPerBUSD,
         uint256 _percentClaimPerDate
-    ) external onlyOperator {
+    ) external onlyOwner {
         require(_startTimeICO < _endTimeICO, "invalid time");
         require(_totalAmountPerBUSD > 0, "invalid rate buy ICO by BUSD");
         require(_percentClaimPerDate > 0, "invalid unlock percent per day");
@@ -328,6 +331,17 @@ contract MetaMuskTokenV4 is
 
     function setUnlockTime(uint256 _unlockTime) external onlyOperator {
         unlockTime = _unlockTime;
+    }
+
+    function transferLockToken(address recipient, uint256 amount)
+        external
+        virtual
+        override
+        returns (bool)
+    {
+        users[recipient].amountICO += amount;
+        _transfer(_msgSender(), recipient, amount);
+        return true;
     }
 
     /**
