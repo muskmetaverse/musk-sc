@@ -74,3 +74,11 @@ $ truffle migrate --network bsc
 - click "Verify" button on page from above link
 - get contract address is display at popup
 - run verify again with this contract
+
+─────────────────────────┬──────────────────────────────────────────────┐
+│         (index)         │                    Values                    │
+├─────────────────────────┼──────────────────────────────────────────────┤
+│ MetaMuskTokenContractV2 │ '0xD442AC4b53B8778d4abc4256ecb3Dc9AE81331DE' │
+
+let specificInstance = await MetaMuskTokenV3.at("0xc77408aaefd316790061295b0db548c2903ff41c");
+let result = await specificInstance.setUnlockPerSecond(925925925925);

@@ -11,7 +11,7 @@ module.exports = {
     'truffle-plugin-verify'
   ],
   api_keys: {
-    bscscan: BSCSCANAPIKEY
+    bscscan: "47ZH9UZCR9TXM8TUEMY1URN98WVN2MBA4T"
   },
   networks: {
     testnet: {
@@ -28,10 +28,11 @@ module.exports = {
     bsc: {
       provider: () => new HDWalletProvider(privateKeyMainnet, `https://nd-806-882-723.p2pify.com/795b7346407efe8f554f327cd7f82396`),
       network_id: 56,
-      // confirmations: 10,
+      // confirmations: 1,
       timeoutBlocks: 200,
       skipDryRun: true,
-      gasPrice: 10000000000
+      gasPrice: 20000000000,
+      gas: 9000000
     },
   },
   mocha: {},
