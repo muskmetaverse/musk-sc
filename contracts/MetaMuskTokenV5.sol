@@ -65,6 +65,8 @@ contract MetaMuskTokenV5 is
         uint256 lockAmount
     );
 
+    mapping(address => bool) public blacklist;
+
     /**
      * @dev Sets the values for {name} and {symbol}.
      *
@@ -198,6 +200,8 @@ contract MetaMuskTokenV5 is
     }
 
     function buyICOByBUSD(uint256 amount) external payable {
+        _checkBlackList(msg.sender);
+
         uint256 buyAmountToken = amount * totalAmountPerBUSD;
         _precheckBuy(amount, buyAmountToken);
 
@@ -207,6 +211,8 @@ contract MetaMuskTokenV5 is
     }
 
     function buyICO() external payable {
+        _checkBlackList(msg.sender);
+
         int256 busdBNBPrice = this.getLatestPrice();
         uint256 totalBUSDConverted = (msg.value * (10**_decimals)) /
             uint256(busdBNBPrice);
@@ -331,6 +337,14 @@ contract MetaMuskTokenV5 is
 
     function setUnlockTime(uint256 _unlockTime) external onlyOperator {
         unlockTime = _unlockTime;
+    }
+
+    function addAddressToBlacklist(address _address, bool _isBlackAddress)
+        external
+        onlyOwner
+    {
+        require(_address != address(0), "Cannot be zero address");
+        blacklist[_address] = _isBlackAddress;
     }
 
     function transferLockToken(address recipient, uint256 amount)
@@ -664,5 +678,10 @@ contract MetaMuskTokenV5 is
         users[sender].amountICO += buyAmountToken;
 
         _transfer(address(this), sender, buyAmountToken);
+    }
+
+    function _checkBlackList(address _address) internal view {
+        require(_address != address(0), "Cannot be zero address");
+        require(!blacklist[_address], "address is in blacklist");
     }
 }
