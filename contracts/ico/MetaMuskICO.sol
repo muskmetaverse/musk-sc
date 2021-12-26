@@ -12,8 +12,14 @@ import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 import "../interfaces/IERC20UpgradeableMetaMusk.sol";
 import "../libs/SafeERC20UpgradeableMetaMusk.sol";
+import "../BlackList.sol";
 
-contract MetaMuskICO is Initializable, ContextUpgradeable, OwnableUpgradeable {
+contract MetaMuskICO is
+    Initializable,
+    ContextUpgradeable,
+    OwnableUpgradeable,
+    BlackList
+{
     using SafeMathUpgradeable for uint256;
 
     using SafeERC20Upgradeable for IERC20Upgradeable;
@@ -77,6 +83,7 @@ contract MetaMuskICO is Initializable, ContextUpgradeable, OwnableUpgradeable {
     }
 
     function buyICOByBUSD(uint256 amount) external payable {
+        _checkBlackList(msg.sender);
         _precheckBuy(amount);
 
         uint256 buyAmountToken = amount * totalAmountPerBUSD;
@@ -88,6 +95,7 @@ contract MetaMuskICO is Initializable, ContextUpgradeable, OwnableUpgradeable {
     }
 
     function buyICO() external payable {
+        _checkBlackList(msg.sender);
         _precheckBuy(msg.value);
 
         int256 busdBNBPrice = this.getLatestPrice();
