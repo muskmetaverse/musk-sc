@@ -8,3 +8,4 @@ yarn.lock
 .openzeppelin
 .private_key.testnet
 .vscode/launch.json
+.private_key.testnet

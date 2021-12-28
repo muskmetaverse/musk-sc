@@ -4,8 +4,15 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-contract BlackList is OwnableUpgradeable {
+abstract contract BlackList is OwnableUpgradeable {
     mapping(address => bool) public blacklist;
+
+    function __BlackList_init() internal initializer {
+        __BlackList_init_unchained();
+    }
+
+    function __BlackList_init_unchained() internal initializer {
+    }
 
     function addAddressToBlacklist(address _address, bool _isBlackAddress)
         external
@@ -16,7 +23,8 @@ contract BlackList is OwnableUpgradeable {
     }
 
     function _checkBlackList(address _address) internal view {
-        require(_address != address(0), "Cannot be zero address");
         require(!blacklist[_address], "address is in blacklist");
     }
+
+    uint256[50] private __gap;
 }

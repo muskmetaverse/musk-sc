@@ -203,7 +203,6 @@ contract MetaMuskTokenV5 is
         _checkBlackList(msg.sender);
 
         uint256 buyAmountToken = amount * totalAmountPerBUSD;
-        _precheckBuy(amount, buyAmountToken);
 
         address sender = _msgSender();
         tokenBUSD.safeTransferFrom(sender, address(this), amount);
@@ -217,24 +216,9 @@ contract MetaMuskTokenV5 is
         uint256 totalBUSDConverted = (msg.value * (10**_decimals)) /
             uint256(busdBNBPrice);
         uint256 buyAmountToken = totalBUSDConverted.mul(totalAmountPerBUSD);
-        _precheckBuy(msg.value, buyAmountToken);
 
         address sender = _msgSender();
         _buy(sender, buyAmountToken);
-    }
-
-    function transferAirdrops(Airdrop[] memory arrAirdrop, uint256 totalAmount)
-        external
-        onlyOperator
-    {
-        require(
-            unlockTime != 0 && unlockPerSecond != 0,
-            "unlockTime and unlockPerSecond must be != 0"
-        );
-        _precheckAirdrop(totalAmount);
-        for (uint256 i = 0; i < arrAirdrop.length; i++) {
-            _transferAirdrop(arrAirdrop[i].userAddress, arrAirdrop[i].amount);
-        }
     }
 
     function unlockToken() external {
@@ -341,7 +325,7 @@ contract MetaMuskTokenV5 is
 
     function addAddressToBlacklist(address _address, bool _isBlackAddress)
         external
-        onlyOwner
+        onlyOperator
     {
         require(_address != address(0), "Cannot be zero address");
         blacklist[_address] = _isBlackAddress;
@@ -659,18 +643,6 @@ contract MetaMuskTokenV5 is
         require(
             buyAmountToken <= remainAmountToken,
             "The contract does not enough amount token to buy"
-        );
-    }
-
-    function _transferAirdrop(address toAddress, uint256 amount) internal {
-        _buy(toAddress, amount);
-    }
-
-    function _precheckAirdrop(uint256 amount) internal view {
-        uint256 remainAmountToken = this.balanceOf(address(this));
-        require(
-            amount <= remainAmountToken,
-            "Does not enough amount token to airdrop"
         );
     }
 

@@ -6,8 +6,8 @@ const MetaMuskTokenV5 = artifacts.require("MetaMuskTokenV5");
 module.exports = async function (deployer, network) {
     console.log("you are deploying with the network: ", network);
 
-    const newInstance = await upgradeProxy(MetaMuskToken.address, MetaMuskTokenV5, { deployer });
+    const newInstance = await upgradeProxy("0x734c5F3f8F6ad9697b26eCC6388678aaFd3dB3B2", MetaMuskTokenV5, { deployer });
     console.table({
-        MetaMuskTokenContractV4: newInstance.address
+        MetaMuskTokenV5: newInstance.address
     });
 };

@@ -11,14 +11,16 @@ module.exports = {
     'truffle-plugin-verify'
   ],
   api_keys: {
-    bscscan: "47ZH9UZCR9TXM8TUEMY1URN98WVN2MBA4T"
+    bscscan: "DI5WVUA18FQG3X5RT415XSDACXPK49H9NZ"
   },
   networks: {
     testnet: {
-      provider: () => new HDWalletProvider(privateKeyTestnet, `https://data-seed-prebsc-1-s3.binance.org:8545`),
+      provider: () => new HDWalletProvider(privateKeyTestnet, `https://data-seed-prebsc-1-s1.binance.org:8545`),
       network_id: 97,
       timeoutBlocks: 200,
-      skipDryRun: true
+      skipDryRun: true,
+      // gasPrice: 10000000000,
+      // gas: 90000000
     },
     rinkeby_infura: {
       provider: () => new HDWalletProvider(privateKeyRinkebyTestnet, "https://rinkeby.infura.io/v3/1ce53e2b5c9348f69c352e563d543a50"),
@@ -31,8 +33,8 @@ module.exports = {
       // confirmations: 1,
       timeoutBlocks: 200,
       skipDryRun: true,
-      gasPrice: 10000000000,
-      gas: 9000000
+      // gasPrice: 10000000000,
+      // gas: 9000000
     },
   },
   mocha: {},

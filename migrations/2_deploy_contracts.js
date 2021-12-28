@@ -1,4 +1,4 @@
-const { deployProxy } = require('@openzeppelin/truffle-upgrades');
+const { deployProxy, admin } = require('@openzeppelin/truffle-upgrades');
 
 const MetaMuskToken = artifacts.require("MetaMuskToken");
 
@@ -20,7 +20,7 @@ const PRICE_FEED_ADDRESS = '0x0630521aC362bc7A19a4eE44b57cE72Ea34AD01c';        
 // const OPERATOR_ADDRESS = '';
 // const PRICE_FEED_ADDRESS = '';
 
-module.exports = async function (deployer, network) {
+module.exports = async function (deployer, network, accounts) {
     console.log("you are deploying with the network: ", network);
 
     const instance = await deployProxy(MetaMuskToken, [
